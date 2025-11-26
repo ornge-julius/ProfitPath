@@ -99,7 +99,8 @@ const TradeForm = ({
   if (!isOpen) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
+    <div className="mt-32 max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">
           {editingTrade ? 'Edit Trade' : 'Add New Trade'}
@@ -309,6 +310,7 @@ const TradeForm = ({
         cancelText="Cancel"
         confirmButtonColor="bg-red-600 hover:bg-red-700"
       />
+      </div>
     </div>
   );
 };
