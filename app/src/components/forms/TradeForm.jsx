@@ -246,7 +246,7 @@ const TradeForm = ({
             </select>
           </div>
           
-          <div className="md:col-span-3">
+          <div className="md:col-span-2 lg:col-span-3">
             <TagSelector
               tags={tags}
               selectedTagIds={selectedTagIds}
@@ -256,7 +256,7 @@ const TradeForm = ({
             />
           </div>
 
-          <div className="md:col-span-3">
+          <div className="md:col-span-2 lg:col-span-3">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Notes</label>
             <textarea
               placeholder="Any additional thoughts or observations..."
@@ -266,7 +266,7 @@ const TradeForm = ({
             />
           </div>
 
-          <div className="flex gap-2 md:col-span-3">
+          <div className="flex flex-col sm:flex-row gap-2 md:col-span-2 lg:col-span-3">
             <button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-lg font-medium transition-colors flex-1 text-white"
