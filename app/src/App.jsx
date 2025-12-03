@@ -247,24 +247,23 @@ function AppContent() {
     const showTagFilter = location.pathname === '/' || location.pathname === '/history';
 
     return (
-      <DateFilterProvider>
-        <TagFilterProvider>
-          <Header
-            onToggleSettings={handleToggleSettings}
-            onToggleTradeForm={handleToggleTradeForm}
-            showTradeForm={showTradeForm}
-            accounts={accounts}
-            selectedAccountId={selectedAccountId}
-            onSelectAccount={handleSelectAccount}
-            onAddAccount={handleAddAccount}
-            onEditAccount={handleEditAccount}
-            onDeleteAccount={handleDeleteAccount}
-            isAuthenticated={isAuthenticated}
-            user={user}
-            onSignIn={handleSignIn}
-            onSignOut={handleSignOut}
-            showTagFilter={showTagFilter}
-          />
+      <>
+        <Header
+          onToggleSettings={handleToggleSettings}
+          onToggleTradeForm={handleToggleTradeForm}
+          showTradeForm={showTradeForm}
+          accounts={accounts}
+          selectedAccountId={selectedAccountId}
+          onSelectAccount={handleSelectAccount}
+          onAddAccount={handleAddAccount}
+          onEditAccount={handleEditAccount}
+          onDeleteAccount={handleDeleteAccount}
+          isAuthenticated={isAuthenticated}
+          user={user}
+          onSignIn={handleSignIn}
+          onSignOut={handleSignOut}
+          showTagFilter={showTagFilter}
+        />
 
       {/* Settings Form */}
       <SettingsForm
@@ -325,12 +324,11 @@ function AppContent() {
         )}
         
         {/* Bottom Navigation Dock - only visible on main routes */}
-        <BottomNavDock 
+        <BottomNavDock
           onToggleTradeForm={handleToggleTradeForm}
           showTradeForm={showTradeForm}
         />
-        </TagFilterProvider>
-      </DateFilterProvider>
+      </>
     );
   };
 
@@ -400,11 +398,15 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <AppContent />
-        <SpeedInsights />
-        <Analytics />
-      </BrowserRouter>
+      <DateFilterProvider>
+        <TagFilterProvider>
+          <BrowserRouter>
+            <AppContent />
+            <SpeedInsights />
+            <Analytics />
+          </BrowserRouter>
+        </TagFilterProvider>
+      </DateFilterProvider>
     </ThemeProvider>
   );
 }
