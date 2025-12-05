@@ -333,64 +333,72 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
-      <Routes>
-        <Route
-          path="/detail/:tradeId"
-          element={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 pt-24">
-              <TradeDetailPage
-                trades={trades}
-                editingTrade={editingTrade}
-                onEdit={handleTradeEdit}
-                onSubmit={handleTradeSubmit}
-                onCancelEdit={handleCancelDetailEdit}
-                onDelete={handleTradeDelete}
-                isAuthenticated={isAuthenticated}
-              />
-            </div>
-          }
-        />
-        <Route path="/" element={<MainLayout />}>
+    <div className="app-shell text-gray-900 dark:text-white">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-100/60 via-white to-blue-100/50 dark:from-emerald-900/30 dark:via-slate-900 dark:to-blue-900/20" />
+        <div className="absolute -left-24 top-10 h-64 w-64 rounded-full bg-emerald-400/20 blur-3xl dark:bg-emerald-500/20" />
+        <div className="absolute -right-16 top-20 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-500/20" />
+      </div>
+
+      <div className="relative">
+        <Routes>
           <Route
-            index
+            path="/detail/:tradeId"
             element={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <DashboardView
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 pt-24">
+                <TradeDetailPage
                   trades={trades}
-                  startingBalance={startingBalance}
+                  editingTrade={editingTrade}
+                  onEdit={handleTradeEdit}
+                  onSubmit={handleTradeSubmit}
+                  onCancelEdit={handleCancelDetailEdit}
+                  onDelete={handleTradeDelete}
+                  isAuthenticated={isAuthenticated}
                 />
               </div>
             }
           />
-          <Route
-            path="comparison"
-            element={
+          <Route path="/" element={<MainLayout />}>
+            <Route
+              index
+              element={
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+                  <DashboardView
+                    trades={trades}
+                    startingBalance={startingBalance}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="comparison"
+              element={
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+                  <TradeBatchComparisonView
+                    trades={trades}
+                  />
+                </div>
+              }
+            />
+            <Route path="tags" element={
               <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <TradeBatchComparisonView
-                  trades={trades}
-                />
+                <TagsManagementView />
               </div>
-            }
-          />
-          <Route path="tags" element={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-              <TagsManagementView />
-            </div>
-          } />
-          <Route
-            path="history"
-            element={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <TradeHistoryView
-                  trades={trades}
-                  onToggleTradeForm={handleToggleTradeForm}
-                />
-              </div>
-            }
-          />
-        </Route>
-      </Routes>
+            } />
+            <Route
+              path="history"
+              element={
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+                  <TradeHistoryView
+                    trades={trades}
+                    onToggleTradeForm={handleToggleTradeForm}
+                  />
+                </div>
+              }
+            />
+          </Route>
+        </Routes>
+      </div>
     </div>
   );
 }

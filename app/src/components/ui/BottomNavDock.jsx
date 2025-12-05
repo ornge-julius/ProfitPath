@@ -6,16 +6,12 @@ import {
   LayoutDashboard,
   Tag,
   TrendingUpDown,
-  Sun,
-  Moon,
   Plus
 } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 
 const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleTheme, isDark } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -90,7 +86,7 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
     <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center">
       <Dock
         items={navItems}
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 shadow-lg"
+        className="bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-2xl shadow-emerald-500/10"
         spring={{ mass: 0.1, stiffness: 150, damping: 12 }}
         magnification={magnification}
         distance={200}
