@@ -61,7 +61,31 @@ const DashboardContent = ({ trades, startingBalance }) => {
   }, [trades]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      <section className="gradient-border glass-panel rounded-3xl px-6 py-6 sm:px-10 sm:py-10 flex flex-col gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-3">
+            <div className="badge-pill w-fit">Elevate your trading story</div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">Performance cockpit</h1>
+              <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 mt-2 max-w-3xl">
+                Crisp metrics, softer visuals, and a guided layout inspired by modern product dashboards. Track confidence, momentum, and opportunities in one glance.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="soft-card rounded-2xl px-4 py-3 text-left min-w-[180px]">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Current balance</p>
+              <p className="text-2xl font-semibold text-slate-900 dark:text-white">${allTimeMetrics.currentBalance?.toLocaleString()}</p>
+            </div>
+            <div className="soft-card rounded-2xl px-4 py-3 text-left min-w-[180px]">
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Win rate</p>
+              <p className="text-2xl font-semibold text-slate-900 dark:text-white">{metrics.winRate?.toFixed(1)}%</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <DashboardMetricsCards metrics={metrics} currentBalance={allTimeMetrics.currentBalance} balanceTrendData={balanceTrendData} />
 
       <CumulativeNetProfitChart data={cumulativeProfitData} />
