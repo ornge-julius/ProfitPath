@@ -188,11 +188,16 @@ function AppContent() {
     toggleBalanceForm();
   };
 
-  const handleAddAccount = (accountData) => {
+  const handleAddAccount = async (accountData) => {
     if (!ensureAuthenticated()) {
       return;
     }
-    addAccount(accountData);
+    try {
+      await addAccount(accountData);
+    } catch (error) {
+      console.error('Failed to add account:', error);
+      // You could show a user-friendly error message here
+    }
   };
 
   const handleEditAccount = (account) => {
@@ -203,21 +208,31 @@ function AppContent() {
     setShowAccountEditForm(true);
   };
 
-  const handleAccountEditSubmit = (updatedAccount) => {
+  const handleAccountEditSubmit = async (updatedAccount) => {
     if (!ensureAuthenticated()) {
       return;
     }
-    updateAccount(updatedAccount);
-    setShowAccountEditForm(false);
-    setEditingAccount(null);
+    try {
+      await updateAccount(updatedAccount);
+      setShowAccountEditForm(false);
+      setEditingAccount(null);
+    } catch (error) {
+      console.error('Failed to update account:', error);
+      // You could show a user-friendly error message here
+    }
   };
 
-  const handleDeleteAccount = (accountId) => {
+  const handleDeleteAccount = async (accountId) => {
     if (!ensureAuthenticated()) {
       return;
     }
     if (accounts.length > 1) {
-      deleteAccount(accountId);
+      try {
+        await deleteAccount(accountId);
+      } catch (error) {
+        console.error('Failed to delete account:', error);
+        // You could show a user-friendly error message here
+      }
     }
   };
 

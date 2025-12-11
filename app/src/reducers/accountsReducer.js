@@ -24,11 +24,12 @@ export const initialAccountsState = {
 export const accountsReducer = (state, action) => {
   switch (action.type) {
     case ACCOUNTS_ACTIONS.ADD_ACCOUNT:
+      // Preserve ID if provided (from database), otherwise generate temporary ID
       const newAccount = {
         ...action.payload,
-        id: Date.now(),
-        created_at: new Date().toISOString(),
-        isActive: true
+        id: action.payload.id || Date.now(),
+        created_at: action.payload.created_at || new Date().toISOString(),
+        isActive: action.payload.isActive !== undefined ? action.payload.isActive : true
       };
       return {
         ...state,
