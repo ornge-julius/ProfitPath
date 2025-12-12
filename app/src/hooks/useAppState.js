@@ -5,31 +5,36 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from './useAuth';
 
 export const useAppState = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState);
   const [usersState, usersDispatch] = useReducer(usersReducer, initialUsersState);
 
   useEffect(() => {
+    // Wait for auth to finish loading before attempting to fetch accounts
+    if (authLoading) {
+      return;
+    }
+
     const fetchAccounts = async () => {
       // Don't fetch if user is not authenticated
       if (!isAuthenticated || !user) {
+        console.log('Account fetch skipped: user not authenticated', { isAuthenticated, userId: user?.id });
         accountsDispatch({
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
           payload: []
         });
-        accountsDispatch({
-          type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT,
-          payload: null
-        });
         return;
       }
 
+      console.log('Fetching accounts for user:', user.id, 'User object:', user);
+
       try {
         // Fetch all accounts for the authenticated user
+        // Use auth.uid() via RLS or explicitly filter by user_id
         const { data: accountsData, error: accountsError } = await supabase
           .from('accounts')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('auth_user_id', user.id)
           .order('created_at', { ascending: false });
           
         if (accountsError) {
@@ -37,15 +42,14 @@ export const useAppState = () => {
           return;
         }
 
+        console.log('Fetched accounts:', accountsData?.length || 0, accountsData);
+
         if (!accountsData || accountsData.length === 0) {
           // No accounts found, set empty array
+          console.log('No accounts found for user');
           accountsDispatch({
             type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
             payload: []
-          });
-          accountsDispatch({
-            type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT,
-            payload: null
           });
           return;
         }
@@ -61,24 +65,14 @@ export const useAppState = () => {
           isActive: accountData.is_active !== false
         }));
 
-        // Set all accounts in state
+        console.log('Mapped accounts:', mappedAccounts);
+        console.log('Will select account:', mappedAccounts[0]?.id);
+
+        // Set all accounts in state (reducer will automatically select first account if none selected)
         accountsDispatch({
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
           payload: mappedAccounts
         });
-
-        // Automatically select the first account if one exists
-        if (mappedAccounts.length > 0) {
-          accountsDispatch({
-            type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT,
-            payload: mappedAccounts[0].id
-          });
-        } else {
-          accountsDispatch({
-            type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT,
-            payload: null
-          });
-        }
 
       } catch (err) {
         console.error('Error in fetchAccounts:', err);
@@ -86,7 +80,7 @@ export const useAppState = () => {
     };
 
     fetchAccounts();
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, authLoading]);
 
   // Account-related functions (maintaining the same API as useSettings)
   const updateStartingBalance = useCallback(async (newBalance) => {

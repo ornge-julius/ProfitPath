@@ -45,7 +45,7 @@ export const accountsReducer = (state, action) => {
         )
       };
     
-    case ACCOUNTS_ACTIONS.DELETE_ACCOUNT:
+    case ACCOUNTS_ACTIONS.DELETE_ACCOUNT: {
       const remainingAccounts = state.accounts.filter(account => account.id !== action.payload);
       let newSelectedId = state.selectedAccountId;
       
@@ -59,6 +59,7 @@ export const accountsReducer = (state, action) => {
         accounts: remainingAccounts,
         selectedAccountId: newSelectedId
       };
+    }
     
     case ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT:
       return {
@@ -66,11 +67,28 @@ export const accountsReducer = (state, action) => {
         selectedAccountId: action.payload
       };
     
-    case ACCOUNTS_ACTIONS.SET_ACCOUNTS:
+    case ACCOUNTS_ACTIONS.SET_ACCOUNTS: {
+      const newAccounts = action.payload;
+      let newSelectedId = state.selectedAccountId;
+      
+      // If no account is currently selected, or the selected account doesn't exist in the new list,
+      // automatically select the first account if available
+      if (newAccounts.length > 0) {
+        const selectedAccountExists = newAccounts.some(acc => acc.id === newSelectedId);
+        if (!selectedAccountExists || !newSelectedId) {
+          newSelectedId = newAccounts[0].id;
+        }
+      } else {
+        // No accounts available, clear selection
+        newSelectedId = null;
+      }
+      
       return {
         ...state,
-        accounts: action.payload
+        accounts: newAccounts,
+        selectedAccountId: newSelectedId
       };
+    }
     
     case ACCOUNTS_ACTIONS.UPDATE_STARTING_BALANCE:
       return {
