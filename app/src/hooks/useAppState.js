@@ -18,15 +18,12 @@ export const useAppState = () => {
     const fetchAccounts = async () => {
       // Don't fetch if user is not authenticated
       if (!isAuthenticated || !user) {
-        console.log('Account fetch skipped: user not authenticated', { isAuthenticated, userId: user?.id });
         accountsDispatch({
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
           payload: []
         });
         return;
       }
-
-      console.log('Fetching accounts for user:', user.id, 'User object:', user);
 
       try {
         // Fetch all accounts for the authenticated user
@@ -38,15 +35,11 @@ export const useAppState = () => {
           .order('created_at', { ascending: false });
           
         if (accountsError) {
-          console.error('Error fetching accounts:', accountsError);
           return;
         }
 
-        console.log('Fetched accounts:', accountsData?.length || 0, accountsData);
-
         if (!accountsData || accountsData.length === 0) {
           // No accounts found, set empty array
-          console.log('No accounts found for user');
           accountsDispatch({
             type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
             payload: []
@@ -65,9 +58,6 @@ export const useAppState = () => {
           isActive: accountData.is_active !== false
         }));
 
-        console.log('Mapped accounts:', mappedAccounts);
-        console.log('Will select account:', mappedAccounts[0]?.id);
-
         // Set all accounts in state (reducer will automatically select first account if none selected)
         accountsDispatch({
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
@@ -75,7 +65,7 @@ export const useAppState = () => {
         });
 
       } catch (err) {
-        console.error('Error in fetchAccounts:', err);
+        // Error handled silently
       }
     };
 
@@ -148,7 +138,6 @@ export const useAppState = () => {
         .single();
 
       if (error) {
-        console.error('Error creating account:', error);
         throw error;
       }
 
@@ -169,7 +158,6 @@ export const useAppState = () => {
       // Account is automatically selected by the reducer
       return mappedAccount;
     } catch (err) {
-      console.error('Error in addAccount:', err);
       throw err;
     }
   }, [user, isAuthenticated]);
@@ -200,7 +188,6 @@ export const useAppState = () => {
         .single();
 
       if (error) {
-        console.error('Error updating account:', error);
         throw error;
       }
 
@@ -220,7 +207,6 @@ export const useAppState = () => {
 
       return mappedAccount;
     } catch (err) {
-      console.error('Error in updateAccount:', err);
       throw err;
     }
   }, [user, isAuthenticated]);
@@ -244,14 +230,12 @@ export const useAppState = () => {
         .eq('user_id', user.id); // Ensure user can only delete their own accounts
 
       if (error) {
-        console.error('Error deleting account:', error);
         throw error;
       }
 
       // Update local state (reducer handles selecting another account if needed)
       accountsDispatch({ type: ACCOUNTS_ACTIONS.DELETE_ACCOUNT, payload: accountId });
     } catch (err) {
-      console.error('Error in deleteAccount:', err);
       throw err;
     }
   }, [user, isAuthenticated]);
