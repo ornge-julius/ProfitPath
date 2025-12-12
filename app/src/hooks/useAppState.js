@@ -58,8 +58,8 @@ export const useAppState = () => {
         const mappedAccounts = accountsData.map(accountData => ({
           id: accountData.id,
           name: accountData.name || 'Trading Account',
-          startingBalance: accountData.starting_balance || 0,
-          currentBalance: accountData.current_balance || accountData.starting_balance || 0,
+          startingBalance: accountData.starting_balance ?? 0,
+          currentBalance: accountData.current_balance ?? accountData.starting_balance ?? 0,
           user_id: accountData.user_id || null,
           created_at: accountData.created_at || new Date().toISOString(),
           isActive: accountData.is_active !== false
@@ -139,7 +139,7 @@ export const useAppState = () => {
           {
             name: accountData.name,
             starting_balance: accountData.startingBalance,
-            current_balance: accountData.currentBalance || accountData.startingBalance,
+            current_balance: accountData.currentBalance ?? accountData.startingBalance,
             user_id: user.id,
             is_active: true
           }
@@ -156,8 +156,8 @@ export const useAppState = () => {
       const mappedAccount = {
         id: insertedAccount.id,
         name: insertedAccount.name || accountData.name,
-        startingBalance: insertedAccount.starting_balance || accountData.startingBalance,
-        currentBalance: insertedAccount.current_balance || accountData.currentBalance || accountData.startingBalance,
+        startingBalance: insertedAccount.starting_balance ?? accountData.startingBalance,
+        currentBalance: insertedAccount.current_balance ?? accountData.currentBalance ?? accountData.startingBalance,
         user_id: insertedAccount.user_id || user.id,
         created_at: insertedAccount.created_at || new Date().toISOString(),
         isActive: insertedAccount.is_active !== false
@@ -208,8 +208,8 @@ export const useAppState = () => {
       const mappedAccount = {
         id: updatedAccount.id,
         name: updatedAccount.name || accountData.name,
-        startingBalance: updatedAccount.starting_balance || accountData.startingBalance,
-        currentBalance: updatedAccount.current_balance || accountData.currentBalance,
+        startingBalance: updatedAccount.starting_balance ?? accountData.startingBalance,
+        currentBalance: updatedAccount.current_balance ?? accountData.currentBalance,
         user_id: updatedAccount.user_id || user.id,
         created_at: updatedAccount.created_at || accountData.created_at,
         isActive: updatedAccount.is_active !== false
@@ -291,7 +291,7 @@ export const useAppState = () => {
   // Return the same API as useSettings for backward compatibility
   return {
     // Account state (maintaining exact same API)
-    startingBalance: selectedAccount?.startingBalance || 0,
+    startingBalance: selectedAccount?.startingBalance ?? 0,
     showBalanceForm: accountsState.showBalanceForm,
     showTradeForm: accountsState.showTradeForm,
     updateStartingBalance,
@@ -299,7 +299,7 @@ export const useAppState = () => {
     toggleTradeForm,
     
     // Additional account state
-    currentBalance: selectedAccount?.currentBalance || 0,
+    currentBalance: selectedAccount?.currentBalance ?? 0,
     user_id: selectedAccount?.user_id || null,
     
     // New account management state and functions
