@@ -17,6 +17,7 @@ import TradeHistoryView from './components/views/TradeHistoryView';
 import TradeDetailPage from './components/views/TradeDetailPage';
 import { DateFilterProvider } from './context/DateFilterContext';
 import { TagFilterProvider } from './context/TagFilterContext';
+import { TagProvider } from './context/TagContext';
 import { ThemeProvider } from './context/ThemeContext';
 import BottomNavDock from './components/ui/BottomNavDock';
 
@@ -415,11 +416,13 @@ function App() {
     <ThemeProvider>
       <DateFilterProvider>
         <TagFilterProvider>
-          <BrowserRouter>
-            <AppContent />
-            <SpeedInsights />
-            <Analytics />
-          </BrowserRouter>
+          <TagProvider>
+            <BrowserRouter>
+              <AppContent />
+              <SpeedInsights />
+              <Analytics />
+            </BrowserRouter>
+          </TagProvider>
         </TagFilterProvider>
       </DateFilterProvider>
     </ThemeProvider>
