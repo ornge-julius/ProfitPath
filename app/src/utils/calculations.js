@@ -67,26 +67,95 @@ export const calculateMetrics = (trades, startingBalance) => {
   };
 };
 
-// Format date for X-axis labels (MM/DD/YYYY)
+// Format date for X-axis labels (MM/DD/YYYY) without timezone conversion
 export const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString; // Return original if invalid date
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${month}/${day}/${year}`;
+  
+  // If already in YYYY-MM-DD format, extract components directly
+  if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split('-');
+    return `${month}/${day}/${year}`;
+  }
+  
+  // Handle ISO timestamp strings (YYYY-MM-DDTHH:mm:ss.sssZ)
+  if (typeof dateString === 'string' && dateString.includes('T')) {
+    const datePart = dateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${month}/${day}/${year}`;
+  }
+  
+  // Fallback: try to parse as Date object, but use local date methods
+  // This handles edge cases where the date might be in a different format
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Return original if invalid date
+    
+    // Use local date methods to avoid timezone issues
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  } catch (e) {
+    return dateString; // Return original if parsing fails
+  }
 };
 
-// Format date for tooltips
+// Format date for tooltips without timezone conversion
 export const formatDateForTooltip = (dateString) => {
   if (!dateString) return 'Date: N/A';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return `Date: ${dateString}`;
+  
+  // If already in YYYY-MM-DD format, extract components directly
+  if (typeof dateString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const [year, month, day] = dateString.split('-');
+    return `Date: ${month}/${day}/${year}`;
+  }
+  
+  // Handle ISO timestamp strings (YYYY-MM-DDTHH:mm:ss.sssZ)
+  if (typeof dateString === 'string' && dateString.includes('T')) {
+    const datePart = dateString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `Date: ${month}/${day}/${year}`;
+  }
+  
+  // Fallback: try to parse as Date object, but use local date methods
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return `Date: ${dateString}`;
+    
+    // Use local date methods to avoid timezone issues
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `Date: ${month}/${day}/${year}`;
+  } catch (e) {
+    return `Date: ${dateString}`; // Return original if parsing fails
+  }
+};
+
+// Format date for HTML date input (YYYY-MM-DD) without timezone conversion
+// Handles ISO timestamps, date-only strings, and Date objects
+export const formatDateForInput = (dateValue) => {
+  if (!dateValue) return '';
+  
+  // If already in YYYY-MM-DD format, return as-is
+  if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // Handle ISO timestamp strings (YYYY-MM-DDTHH:mm:ss.sssZ)
+  if (typeof dateValue === 'string' && dateValue.includes('T')) {
+    return dateValue.split('T')[0];
+  }
+  
+  // Handle Date objects - use local date methods to avoid timezone issues
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  if (isNaN(date.getTime())) return '';
+  
+  const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();
-  return `Date: ${month}/${day}/${year}`;
+  
+  return `${year}-${month}-${day}`;
 };
 
 // Generate chart data for cumulative profit (sorted by date)
