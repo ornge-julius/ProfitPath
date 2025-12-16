@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { parseISO, isValid } from 'date-fns';
+import { normalizeDate } from '../utils/calculations';
 
 const STORAGE_KEY = 'dashboardDateRange';
 
@@ -459,10 +461,17 @@ export const filterTradesByExitDate = (trades, filter) => {
       return false;
     }
 
-    const exitTime = new Date(trade.exit_date).getTime();
-    if (Number.isNaN(exitTime)) {
+    const exitDateNormalized = normalizeDate(trade.exit_date);
+    if (!exitDateNormalized) {
       return false;
     }
+
+    const exitDate = parseISO(exitDateNormalized);
+    if (!isValid(exitDate)) {
+      return false;
+    }
+
+    const exitTime = exitDate.getTime();
 
     if (fromTime !== null && exitTime < fromTime) {
       return false;
