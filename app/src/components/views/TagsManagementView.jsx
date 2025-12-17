@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Fab } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../context/ThemeContext';
+import { useTagFilter } from '../../context/TagFilterContext';
 import TagForm from '../forms/TagForm';
 import TagCard from '../ui/TagCard';
 import ConfirmModal from '../ui/ConfirmModal';
@@ -12,6 +14,8 @@ import AnimatedContent from '../ui/animation/AnimatedContent';
 const TagsManagementView = () => {
   const { isAuthenticated } = useAuth();
   const { isDark } = useTheme();
+  const { setSelectedTags, setMode, FILTER_MODES } = useTagFilter();
+  const navigate = useNavigate();
   const { tags, loading, error, createTag, updateTag, deleteTag } = useTagManagement();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingTag, setEditingTag] = useState(null);
@@ -45,6 +49,17 @@ const TagsManagementView = () => {
       // Handle error (show notification)
       console.error('Error deleting tag:', err);
     }
+  };
+
+  const handleViewTrades = (tag) => {
+    setSelectedTags([tag.id]);
+    setMode(FILTER_MODES.OR);
+    navigate('/history', {
+      state: {
+        from: '/tags',
+        selectedTagIds: [tag.id]
+      }
+    });
   };
 
   if (loading) {
@@ -134,6 +149,7 @@ const TagsManagementView = () => {
                 tag={tag}
                 onEdit={isAuthenticated ? () => setEditingTag(tag) : undefined}
                 onDelete={isAuthenticated ? () => setDeletingTag(tag) : undefined}
+                onViewTrades={handleViewTrades}
                 canEdit={isAuthenticated}
               />
             </AnimatedContent>
