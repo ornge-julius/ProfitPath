@@ -1,6 +1,6 @@
 import { useReducer, useCallback, useEffect, useMemo } from 'react';
 import { tradeReducer, TRADE_ACTIONS, initialTradeState } from '../reducers/tradeReducer';
-import { calculateProfit } from '../utils/calculations';
+import { calculateProfit, normalizeDate } from '../utils/calculations';
 import { supabase } from '../supabaseClient';
 
 const mapTradeWithTags = (trade) => {
@@ -91,8 +91,8 @@ export const useTradeManagement = (selectedAccountId) => {
       entry_price: entryPrice,
       exit_price: exitPrice,
       quantity,
-      entry_date: tradeData.entry_date,
-      exit_date: tradeData.exit_date,
+      entry_date: normalizeDate(tradeData.entry_date),
+      exit_date: normalizeDate(tradeData.exit_date),
       notes: tradeData.notes || '',
       reasoning: tradeData.reasoning || '',
       result: Number.isNaN(parsedResult) ? null : parsedResult,
@@ -196,8 +196,8 @@ export const useTradeManagement = (selectedAccountId) => {
       entry_price: entryPrice,
       exit_price: exitPrice,
       quantity,
-      entry_date: tradeData.entry_date,
-      exit_date: tradeData.exit_date,
+      entry_date: normalizeDate(tradeData.entry_date),
+      exit_date: normalizeDate(tradeData.exit_date),
       notes: tradeData.notes || '',
       reasoning: tradeData.reasoning || '',
       result: Number.isNaN(parsedResult) ? null : parsedResult,

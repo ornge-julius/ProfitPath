@@ -1,3 +1,30 @@
+import { format, parseISO, isValid, isDate, differenceInDays, compareAsc } from 'date-fns';
+
+// Normalize date to YYYY-MM-DD format (for DB storage/retrieval)
+// Handles: ISO timestamps, YYYY-MM-DD strings, Date objects
+export const normalizeDate = (dateValue) => {
+  if (!dateValue) return null;
+  
+  // If already in YYYY-MM-DD format, return as-is
+  if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // Handle ISO timestamp strings - extract date part directly
+  if (typeof dateValue === 'string' && dateValue.includes('T')) {
+    return dateValue.split('T')[0];
+  }
+  
+  // Parse and format using date-fns
+  try {
+    const date = isDate(dateValue) ? dateValue : parseISO(dateValue);
+    if (!isValid(date)) return null;
+    return format(date, 'yyyy-MM-dd');
+  } catch (e) {
+    return null;
+  }
+};
+
 // Calculate profit for a trade
 export const calculateProfit = (entryPrice, exitPrice, quantity, type) => {
   const profit = (exitPrice * 100 - entryPrice * 100) * quantity;
@@ -15,8 +42,13 @@ export const calculateBalanceAtDate = (trades, startingBalance, targetDate) => {
     return startingBalance;
   }
 
-  const targetTime = new Date(targetDate).getTime();
-  if (Number.isNaN(targetTime)) {
+  const targetDateNormalized = normalizeDate(targetDate);
+  if (!targetDateNormalized) {
+    return startingBalance;
+  }
+
+  const targetDateObj = parseISO(targetDateNormalized);
+  if (!isValid(targetDateObj)) {
     return startingBalance;
   }
 
@@ -25,12 +57,16 @@ export const calculateBalanceAtDate = (trades, startingBalance, targetDate) => {
     if (!trade || !trade.exit_date) {
       return false;
     }
-    const exitTime = new Date(trade.exit_date).getTime();
-    if (Number.isNaN(exitTime)) {
+    const exitDateNormalized = normalizeDate(trade.exit_date);
+    if (!exitDateNormalized) {
+      return false;
+    }
+    const exitDateObj = parseISO(exitDateNormalized);
+    if (!isValid(exitDateObj)) {
       return false;
     }
     // Include trades that exited before the target date (not on or after)
-    return exitTime < targetTime;
+    return compareAsc(exitDateObj, targetDateObj) < 0;
   });
 
   // Calculate total profit from trades before the target date
@@ -67,26 +103,33 @@ export const calculateMetrics = (trades, startingBalance) => {
   };
 };
 
-// Format date for X-axis labels (MM/DD/YYYY)
+// Format date for display (MM/DD/YYYY) without timezone conversion
 export const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString; // Return original if invalid date
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${month}/${day}/${year}`;
+  
+  const normalized = normalizeDate(dateString);
+  if (!normalized) return dateString;
+  
+  try {
+    const date = parseISO(normalized);
+    if (!isValid(date)) return dateString;
+    return format(date, 'MM/dd/yyyy');
+  } catch (e) {
+    return dateString;
+  }
 };
 
 // Format date for tooltips
 export const formatDateForTooltip = (dateString) => {
   if (!dateString) return 'Date: N/A';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return `Date: ${dateString}`;
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const year = date.getFullYear();
-  return `Date: ${month}/${day}/${year}`;
+  const formatted = formatDate(dateString);
+  return formatted ? `Date: ${formatted}` : `Date: ${dateString}`;
+};
+
+// Format date for HTML date input (YYYY-MM-DD)
+export const formatDateForInput = (dateValue) => {
+  const normalized = normalizeDate(dateValue);
+  return normalized || '';
 };
 
 // Generate chart data for cumulative profit (sorted by date)
@@ -95,16 +138,22 @@ export const generateCumulativeProfitData = (trades) => {
     return [];
   }
 
-  const tradesWithExitDate = trades.filter((trade) => trade && trade.exit_date && !Number.isNaN(new Date(trade.exit_date).getTime()));
+  const tradesWithExitDate = trades.filter((trade) => {
+    if (!trade || !trade.exit_date) return false;
+    const normalized = normalizeDate(trade.exit_date);
+    if (!normalized) return false;
+    const date = parseISO(normalized);
+    return isValid(date);
+  });
 
   if (tradesWithExitDate.length === 0) {
     return [];
   }
 
   const sortedTrades = [...tradesWithExitDate].sort((a, b) => {
-    const dateA = new Date(a.exit_date);
-    const dateB = new Date(b.exit_date);
-    return dateA - dateB;
+    const dateA = parseISO(normalizeDate(a.exit_date));
+    const dateB = parseISO(normalizeDate(b.exit_date));
+    return compareAsc(dateA, dateB);
   });
 
   let cumulative = 0;
@@ -113,7 +162,7 @@ export const generateCumulativeProfitData = (trades) => {
   sortedTrades.forEach((trade) => {
     cumulative += trade.profit || 0;
     data.push({
-      date: trade.exit_date,
+      date: normalizeDate(trade.exit_date),
       cumulative: cumulative,
       profit: trade.profit
     });
@@ -124,16 +173,22 @@ export const generateCumulativeProfitData = (trades) => {
 
 // Generate chart data for account balance
 export const generateAccountBalanceData = (trades, startingBalance) => {
-  const tradesWithExitDate = trades.filter((trade) => trade && trade.exit_date && !Number.isNaN(new Date(trade.exit_date).getTime()));
+  const tradesWithExitDate = trades.filter((trade) => {
+    if (!trade || !trade.exit_date) return false;
+    const normalized = normalizeDate(trade.exit_date);
+    if (!normalized) return false;
+    const date = parseISO(normalized);
+    return isValid(date);
+  });
 
   if (tradesWithExitDate.length === 0) {
     return [{ date: 'Start', balance: startingBalance, tradeNum: 0 }];
   }
 
   const sortedTrades = [...tradesWithExitDate].sort((a, b) => {
-    const dateA = new Date(a.exit_date);
-    const dateB = new Date(b.exit_date);
-    return dateA - dateB;
+    const dateA = parseISO(normalizeDate(a.exit_date));
+    const dateB = parseISO(normalizeDate(b.exit_date));
+    return compareAsc(dateA, dateB);
   });
 
   let balance = startingBalance;
@@ -143,7 +198,7 @@ export const generateAccountBalanceData = (trades, startingBalance) => {
     const profit = trade.profit || 0;
     balance += profit;
     data.push({
-      date: trade.exit_date,
+      date: normalizeDate(trade.exit_date),
       balance,
       tradeNum: index + 1
     });
@@ -159,8 +214,13 @@ export const generateLast30DaysNetPNLData = (trades) => {
   }
 
   const exitDates = trades
-    .map((trade) => (trade.exit_date ? new Date(trade.exit_date) : null))
-    .filter((date) => date && !isNaN(date.getTime()));
+    .map((trade) => {
+      if (!trade.exit_date) return null;
+      const normalized = normalizeDate(trade.exit_date);
+      if (!normalized) return null;
+      return parseISO(normalized);
+    })
+    .filter((date) => date && isValid(date));
 
   if (exitDates.length === 0) {
     return [];
@@ -174,7 +234,7 @@ export const generateLast30DaysNetPNLData = (trades) => {
   const dailyData = {};
 
   for (let cursor = new Date(startDate); cursor <= mostRecentDate; cursor.setDate(cursor.getDate() + 1)) {
-    const dateKey = cursor.toISOString().split('T')[0];
+    const dateKey = format(cursor, 'yyyy-MM-dd');
     const formattedDate = formatDate(dateKey);
     dailyData[dateKey] = {
       date: dateKey,
@@ -190,12 +250,17 @@ export const generateLast30DaysNetPNLData = (trades) => {
       return;
     }
 
-    const exitDate = new Date(trade.exit_date);
-    if (isNaN(exitDate.getTime())) {
+    const exitDateNormalized = normalizeDate(trade.exit_date);
+    if (!exitDateNormalized) {
       return;
     }
 
-    const dateKey = exitDate.toISOString().split('T')[0];
+    const exitDate = parseISO(exitDateNormalized);
+    if (!isValid(exitDate)) {
+      return;
+    }
+
+    const dateKey = format(exitDate, 'yyyy-MM-dd');
 
     if (exitDate >= startDate && exitDate <= mostRecentDate && dailyData[dateKey]) {
       dailyData[dateKey].netPNL += trade.profit || 0;
@@ -212,7 +277,7 @@ export const generateLast30DaysNetPNLData = (trades) => {
         isPositive: item.netPNL >= 0
       };
     })
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+    .sort((a, b) => compareAsc(parseISO(a.date), parseISO(b.date)));
 };
 
 // Generate trimmed balance trend data for mini charts
@@ -236,7 +301,21 @@ export const generateWinLossData = (winningTrades, losingTrades) => [
 
 // Calculate trade duration in days
 export const calculateTradeDuration = (entry_date, exit_date) => {
-  return Math.ceil((new Date(exit_date) - new Date(entry_date)) / (1000 * 60 * 60 * 24));
+  const entryNormalized = normalizeDate(entry_date);
+  const exitNormalized = normalizeDate(exit_date);
+  
+  if (!entryNormalized || !exitNormalized) {
+    return 0;
+  }
+  
+  const entryDate = parseISO(entryNormalized);
+  const exitDate = parseISO(exitNormalized);
+  
+  if (!isValid(entryDate) || !isValid(exitDate)) {
+    return 0;
+  }
+  
+  return Math.max(0, differenceInDays(exitDate, entryDate) + 1); // +1 to include both days
 };
 
 // Calculate return percentage
@@ -293,14 +372,23 @@ export const generateMonthlyNetPNLData = (trades) => {
   const monthlyData = {};
 
   trades.forEach((trade) => {
-    const exitDate = trade.exit_date ? new Date(trade.exit_date) : null;
-    if (!exitDate || isNaN(exitDate.getTime())) {
+    if (!trade.exit_date) {
+      return;
+    }
+    
+    const exitDateNormalized = normalizeDate(trade.exit_date);
+    if (!exitDateNormalized) {
+      return;
+    }
+    
+    const exitDate = parseISO(exitDateNormalized);
+    if (!isValid(exitDate)) {
       return;
     }
 
     const year = exitDate.getFullYear();
     const month = exitDate.getMonth();
-    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const monthKey = format(exitDate, 'yyyy-MM');
 
     if (!monthlyData[monthKey]) {
       monthlyData[monthKey] = {
@@ -417,8 +505,17 @@ export const generateBatchComparisonData = (currentBatch, previousBatch) => {
       return Number.POSITIVE_INFINITY;
     }
 
-    const timestamp = new Date(trade.exit_date).getTime();
-    return Number.isNaN(timestamp) ? Number.POSITIVE_INFINITY : timestamp;
+    const exitDateNormalized = normalizeDate(trade.exit_date);
+    if (!exitDateNormalized) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    const exitDate = parseISO(exitDateNormalized);
+    if (!isValid(exitDate)) {
+      return Number.POSITIVE_INFINITY;
+    }
+
+    return exitDate.getTime();
   };
 
   const sortByExitDate = (batch) => {
@@ -454,7 +551,6 @@ export const generateBatchComparisonData = (currentBatch, previousBatch) => {
       tradeNumber: i + 1,
       currentCumulative: currentCumulative,
       previousCumulative: previousCumulative,
-      // Only include values if trade exists
       currentValue: currentTrade ? currentCumulative : null,
       previousValue: previousTrade ? previousCumulative : null
     });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2 } from 'lucide-react';
-import { getResultNumber, getTradeTypeNumber } from '../../utils/calculations';
+import { getResultNumber, getTradeTypeNumber, formatDateForInput } from '../../utils/calculations';
 import ConfirmModal from '../ui/ConfirmModal';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import TagSelector from '../ui/TagSelector';
@@ -46,7 +46,9 @@ const TradeForm = ({
         ...tradeFields,
         entry_price: editingTrade.entry_price.toString(),
         exit_price: editingTrade.exit_price.toString(),
-        quantity: editingTrade.quantity.toString()
+        quantity: editingTrade.quantity.toString(),
+        entry_date: formatDateForInput(editingTrade.entry_date),
+        exit_date: formatDateForInput(editingTrade.exit_date)
       });
       setSelectedTagIds((tradeTags || []).map((tag) => tag.id));
     } else {
