@@ -4,9 +4,28 @@ import { usersReducer, USERS_ACTIONS, initialUsersState } from '../reducers/user
 import { supabase } from '../supabaseClient';
 import { useAuth } from './useAuth';
 
+const initializeAccountsState = () => {
+  if (typeof window === 'undefined') {
+    return initialAccountsState;
+  }
+
+  const storedAccountId = window.localStorage.getItem('selectedAccountId');
+  let parsedAccountId = storedAccountId;
+
+  if (storedAccountId) {
+    const numericId = Number(storedAccountId);
+    parsedAccountId = Number.isNaN(numericId) ? storedAccountId : numericId;
+  }
+
+  return {
+    ...initialAccountsState,
+    selectedAccountId: parsedAccountId || null
+  };
+};
+
 export const useAppState = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState);
+  const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState, initializeAccountsState);
   const [usersState, usersDispatch] = useReducer(usersReducer, initialUsersState);
 
   useEffect(() => {
@@ -71,6 +90,18 @@ export const useAppState = () => {
 
     fetchAccounts();
   }, [user, isAuthenticated, authLoading]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    if (accountsState.selectedAccountId) {
+      window.localStorage.setItem('selectedAccountId', accountsState.selectedAccountId);
+    } else {
+      window.localStorage.removeItem('selectedAccountId');
+    }
+  }, [accountsState.selectedAccountId]);
 
   // Account-related functions (maintaining the same API as useSettings)
   const updateStartingBalance = useCallback(async (newBalance) => {
