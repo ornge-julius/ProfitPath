@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect } from 'react';
+import { useReducer, useCallback, useEffect, useRef } from 'react';
 import { accountsReducer, ACCOUNTS_ACTIONS, initialAccountsState } from '../reducers/accountsReducer';
 import { usersReducer, USERS_ACTIONS, initialUsersState } from '../reducers/usersReducer';
 import { supabase } from '../supabaseClient';
@@ -27,11 +27,19 @@ export const useAppState = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState, initializeAccountsState);
   const [usersState, usersDispatch] = useReducer(usersReducer, initialUsersState);
+  const lastFetchedUserIdRef = useRef(null);
 
   useEffect(() => {
     // Wait for auth to finish loading before attempting to fetch accounts
     if (authLoading) {
       return;
+    }
+
+    // Skip if we already fetched accounts for this user
+    if (isAuthenticated && user?.id) {
+      if (lastFetchedUserIdRef.current === user.id && accountsState.accounts.length > 0) {
+        return; // Don't refetch if we already have data for this user
+      }
     }
 
     const fetchAccounts = async () => {
@@ -41,6 +49,7 @@ export const useAppState = () => {
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
           payload: []
         });
+        lastFetchedUserIdRef.current = null;
         return;
       }
 
@@ -83,13 +92,15 @@ export const useAppState = () => {
           payload: mappedAccounts
         });
 
+        // Track that we've fetched for this user
+        lastFetchedUserIdRef.current = user.id;
       } catch (err) {
         // Error handled silently
       }
     };
 
     fetchAccounts();
-  }, [user, isAuthenticated, authLoading]);
+  }, [user?.id, isAuthenticated, authLoading]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {

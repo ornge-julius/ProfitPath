@@ -28,7 +28,7 @@ export const TagProvider = ({ children }) => {
 
       // If user is logged in, filter by user_id
       // If not logged in, try to fetch all tags (may fail due to RLS)
-      if (user) {
+      if (user?.id) {
         query = query.eq('user_id', user.id);
       }
 
@@ -51,7 +51,34 @@ export const TagProvider = ({ children }) => {
         usage_count: tag.trade_tags?.length || 0
       }));
 
-      setTags(tagsWithUsage);
+      // Only update state if tags actually changed
+      setTags(prevTags => {
+        // Check if IDs changed (tags added/removed)
+        const prevTagIds = prevTags.map(t => t.id).sort().join(',');
+        const newTagIds = tagsWithUsage.map(t => t.id).sort().join(',');
+        if (prevTagIds !== newTagIds || prevTags.length !== tagsWithUsage.length) {
+          return tagsWithUsage; // IDs changed, definitely update
+        }
+
+        // IDs are the same, check if any tag properties changed
+        const tagsChanged = prevTags.some(prevTag => {
+          const newTag = tagsWithUsage.find(t => t.id === prevTag.id);
+          if (!newTag) return true; // Tag not found, changed
+
+          // Compare relevant properties
+          return (
+            prevTag.name !== newTag.name ||
+            prevTag.color !== newTag.color ||
+            prevTag.usage_count !== newTag.usage_count
+          );
+        });
+
+        if (tagsChanged) {
+          return tagsWithUsage; // Properties changed, update state
+        }
+
+        return prevTags; // No changes detected, return previous state
+      });
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -61,15 +88,15 @@ export const TagProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
-  // Fetch tags when component mounts or user changes
+  // Fetch tags when component mounts or user ID changes
   useEffect(() => {
     fetchTags();
   }, [fetchTags]);
 
   const createTag = useCallback(async (tagData) => {
-    if (!user) return null;
+    if (!user?.id) return null;
 
     try {
       const { data, error: createError } = await supabase
@@ -90,10 +117,10 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user, fetchTags]);
+  }, [user?.id, fetchTags]);
 
   const updateTag = useCallback(async (tagId, tagData) => {
-    if (!user) return null;
+    if (!user?.id) return null;
 
     try {
       const { data, error: updateError } = await supabase
@@ -115,10 +142,10 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user, fetchTags]);
+  }, [user?.id, fetchTags]);
 
   const deleteTag = useCallback(async (tagId) => {
-    if (!user) return;
+    if (!user?.id) return;
 
     try {
       const { error: deleteError } = await supabase
@@ -134,7 +161,7 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user, fetchTags]);
+  }, [user?.id, fetchTags]);
 
   const value = {
     tags,

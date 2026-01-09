@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { getResultNumber, getTradeTypeNumber, formatDateForInput } from '../../utils/calculations';
 import ConfirmModal from '../ui/ConfirmModal';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import TagSelector from '../ui/TagSelector';
+import { useAuth } from '../../hooks/useAuth';
+
+// Module-level storage to persist form data across component remounts
+// This is more appropriate than localStorage as it's in-memory and session-scoped
+let persistedFormData = null;
+let persistedTagIds = null;
 
 const TradeForm = ({ 
   isOpen, 
@@ -14,25 +20,118 @@ const TradeForm = ({
   onDelete 
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
-    symbol: '',
-    position_type: getTradeTypeNumber('CALL'),
-    entry_price: '',
-    exit_price: '',
-    quantity: '',
-    entry_date: '',
-    exit_date: '',
-    notes: '',
-    reasoning: '',  // changed from reason to reasoning
-    result: getResultNumber('WIN'),
-    option: '',
-    source: ''
-  });
-  const [selectedTagIds, setSelectedTagIds] = useState([]);
-  const { tags, loading: tagsLoading } = useTagManagement();
-
-  useEffect(() => {
+  
+  // Initialize form data from editingTrade if available, then persisted data, otherwise use defaults
+  const [formData, setFormData] = useState(() => {
     if (editingTrade) {
+      // Populate from editingTrade if provided
+      const {
+        tags: tradeTags,
+        profit,
+        account_id,
+        user_id,
+        trade_tags,
+        ...tradeFields
+      } = editingTrade;
+      
+      return {
+        ...tradeFields,
+        entry_price: editingTrade.entry_price.toString(),
+        exit_price: editingTrade.exit_price.toString(),
+        quantity: editingTrade.quantity.toString(),
+        entry_date: formatDateForInput(editingTrade.entry_date),
+        exit_date: formatDateForInput(editingTrade.exit_date)
+      };
+    }
+    if (persistedFormData) {
+      return persistedFormData;
+    }
+    return {
+      symbol: '',
+      position_type: getTradeTypeNumber('CALL'),
+      entry_price: '',
+      exit_price: '',
+      quantity: '',
+      entry_date: '',
+      exit_date: '',
+      notes: '',
+      reasoning: '',  // changed from reason to reasoning
+      result: getResultNumber('WIN'),
+      option: '',
+      source: ''
+    };
+  });
+  
+  const [selectedTagIds, setSelectedTagIds] = useState(() => {
+    if (editingTrade) {
+      // Populate tags from editingTrade if provided
+      return (editingTrade.tags || []).map((tag) => tag.id);
+    }
+    if (persistedTagIds) {
+      return persistedTagIds;
+    }
+    return [];
+  });
+  
+  const { tags, loading: tagsLoading } = useTagManagement();
+  const { user } = useAuth();
+  // Track previous editingTrade to detect intentional mode switches
+  const prevEditingTradeRef = useRef(editingTrade);
+  // Track previous user ID to detect user changes
+  const prevUserIdRef = useRef(user?.id);
+  
+  // Clear persisted form data when user logs out or changes
+  useEffect(() => {
+    const currentUserId = user?.id;
+    const prevUserId = prevUserIdRef.current;
+    
+    // If user changed (different user logged in) or user logged out, clear persisted data
+    if (prevUserId !== undefined && prevUserId !== currentUserId) {
+      persistedFormData = null;
+      persistedTagIds = null;
+      // Also reset the form state if not editing a trade
+      if (!editingTrade) {
+        setFormData({
+          symbol: '',
+          position_type: getTradeTypeNumber('CALL'),
+          entry_price: '',
+          exit_price: '',
+          quantity: '',
+          entry_date: '',
+          exit_date: '',
+          notes: '',
+          reasoning: '',
+          result: getResultNumber('WIN'),
+          option: '',
+          source: ''
+        });
+        setSelectedTagIds([]);
+      }
+    }
+    
+    prevUserIdRef.current = currentUserId;
+  }, [user?.id, editingTrade]);
+  
+  // Persist form data whenever it changes (only for new trades, not edits)
+  useEffect(() => {
+    if (!editingTrade) {
+      persistedFormData = formData;
+      persistedTagIds = selectedTagIds;
+    }
+  }, [formData, selectedTagIds, editingTrade]);
+
+  // Only reset form when intentionally switching modes, not on every render
+  useEffect(() => {
+    // Only run when editingTrade actually changed
+    const editingTradeChanged = prevEditingTradeRef.current !== editingTrade;
+    
+    // Don't do anything if editingTrade hasn't changed
+    if (!editingTradeChanged) {
+      return;
+    }
+    
+    if (editingTrade) {
+      // We're editing a trade - load the trade data
       const {
         tags: tradeTags,
         profit,
@@ -51,7 +150,9 @@ const TradeForm = ({
         exit_date: formatDateForInput(editingTrade.exit_date)
       });
       setSelectedTagIds((tradeTags || []).map((tag) => tag.id));
-    } else {
+    } else if (prevEditingTradeRef.current !== null) {
+      // We're switching FROM editing mode TO new trade mode
+      // Always reset the form in this case - the data came from the edited trade, not user input
       setFormData({
         symbol: '',
         position_type: getTradeTypeNumber('CALL'),
@@ -61,14 +162,26 @@ const TradeForm = ({
         entry_date: '',
         exit_date: '',
         notes: '',
-        reasoning: '',  // changed from reason to reasoning
+        reasoning: '',
         result: getResultNumber('WIN'),
         option: '',
         source: ''
       });
+      
       setSelectedTagIds([]);
+      
+      // Clear persisted data to prevent edited trade data from persisting
+      persistedFormData = null;
+      persistedTagIds = null;
     }
-  }, [editingTrade]);
+    // Note: We intentionally do NOT reset the form when:
+    // - User switches tabs/windows (editingTrade hasn't changed)
+    // - Form already has user-entered data (we preserve it)
+    // - Component remounts (formData persists in React state as long as component stays mounted)
+
+    // Update ref
+    prevEditingTradeRef.current = editingTrade;
+  }, [editingTrade]); // Only depend on editingTrade to prevent unnecessary runs
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,12 +194,36 @@ const TradeForm = ({
     }
 
     try {
-      await onSubmit({
+      const result = await onSubmit({
         ...formData,
         tagIds: selectedTagIds
       });
+      // Only reset form after successful submission
+      // onSubmit returns true on success, false on failure
+      if (result && !editingTrade) {
+        const emptyFormData = {
+          symbol: '',
+          position_type: getTradeTypeNumber('CALL'),
+          entry_price: '',
+          exit_price: '',
+          quantity: '',
+          entry_date: '',
+          exit_date: '',
+          notes: '',
+          reasoning: '',
+          result: getResultNumber('WIN'),
+          option: '',
+          source: ''
+        };
+        setFormData(emptyFormData);
+        setSelectedTagIds([]);
+        // Clear persisted data
+        persistedFormData = emptyFormData;
+        persistedTagIds = [];
+      }
     } catch (err) {
-      // Error handling
+      // Error handling - if onSubmit throws an error, don't reset the form
+      console.error('Error submitting trade:', err);
     }
   };
 
@@ -98,10 +235,10 @@ const TradeForm = ({
     }
   };
 
-  if (!isOpen) return null;
-
+  // Keep component mounted but hidden to preserve state when closed
   return (
-    <div className="mt-32 max-w-7xl mx-auto px-4 sm:px-6">
+    <div className={isOpen ? 'block' : 'hidden'}>
+      <div className="mt-32 max-w-7xl mx-auto px-4 sm:px-6">
       <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">
@@ -312,6 +449,7 @@ const TradeForm = ({
         cancelText="Cancel"
         confirmButtonColor="bg-red-600 hover:bg-red-700"
       />
+      </div>
       </div>
     </div>
   );
