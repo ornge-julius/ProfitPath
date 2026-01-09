@@ -21,9 +21,29 @@ const TradeForm = ({
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  // Initialize form data from persisted data if available, otherwise use defaults
+  // Initialize form data from editingTrade if available, then persisted data, otherwise use defaults
   const [formData, setFormData] = useState(() => {
-    if (persistedFormData && !editingTrade) {
+    if (editingTrade) {
+      // Populate from editingTrade if provided
+      const {
+        tags: tradeTags,
+        profit,
+        account_id,
+        user_id,
+        trade_tags,
+        ...tradeFields
+      } = editingTrade;
+      
+      return {
+        ...tradeFields,
+        entry_price: editingTrade.entry_price.toString(),
+        exit_price: editingTrade.exit_price.toString(),
+        quantity: editingTrade.quantity.toString(),
+        entry_date: formatDateForInput(editingTrade.entry_date),
+        exit_date: formatDateForInput(editingTrade.exit_date)
+      };
+    }
+    if (persistedFormData) {
       return persistedFormData;
     }
     return {
@@ -43,7 +63,11 @@ const TradeForm = ({
   });
   
   const [selectedTagIds, setSelectedTagIds] = useState(() => {
-    if (persistedTagIds && !editingTrade) {
+    if (editingTrade) {
+      // Populate tags from editingTrade if provided
+      return (editingTrade.tags || []).map((tag) => tag.id);
+    }
+    if (persistedTagIds) {
       return persistedTagIds;
     }
     return [];
