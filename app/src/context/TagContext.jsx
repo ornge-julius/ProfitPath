@@ -53,12 +53,31 @@ export const TagProvider = ({ children }) => {
 
       // Only update state if tags actually changed
       setTags(prevTags => {
+        // Check if IDs changed (tags added/removed)
         const prevTagIds = prevTags.map(t => t.id).sort().join(',');
         const newTagIds = tagsWithUsage.map(t => t.id).sort().join(',');
-        if (prevTagIds === newTagIds && prevTags.length === tagsWithUsage.length) {
-          return prevTags; // Return previous state if no change
+        if (prevTagIds !== newTagIds || prevTags.length !== tagsWithUsage.length) {
+          return tagsWithUsage; // IDs changed, definitely update
         }
-        return tagsWithUsage;
+
+        // IDs are the same, check if any tag properties changed
+        const tagsChanged = prevTags.some(prevTag => {
+          const newTag = tagsWithUsage.find(t => t.id === prevTag.id);
+          if (!newTag) return true; // Tag not found, changed
+
+          // Compare relevant properties
+          return (
+            prevTag.name !== newTag.name ||
+            prevTag.color !== newTag.color ||
+            prevTag.usage_count !== newTag.usage_count
+          );
+        });
+
+        if (tagsChanged) {
+          return tagsWithUsage; // Properties changed, update state
+        }
+
+        return prevTags; // No changes detected, return previous state
       });
       setError(null);
     } catch (err) {
