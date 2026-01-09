@@ -4,6 +4,7 @@ import { getResultNumber, getTradeTypeNumber, formatDateForInput } from '../../u
 import ConfirmModal from '../ui/ConfirmModal';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import TagSelector from '../ui/TagSelector';
+import { useAuth } from '../../hooks/useAuth';
 
 // Module-level storage to persist form data across component remounts
 // This is more appropriate than localStorage as it's in-memory and session-scoped
@@ -49,8 +50,43 @@ const TradeForm = ({
   });
   
   const { tags, loading: tagsLoading } = useTagManagement();
+  const { user } = useAuth();
   // Track previous editingTrade to detect intentional mode switches
   const prevEditingTradeRef = useRef(editingTrade);
+  // Track previous user ID to detect user changes
+  const prevUserIdRef = useRef(user?.id);
+  
+  // Clear persisted form data when user logs out or changes
+  useEffect(() => {
+    const currentUserId = user?.id;
+    const prevUserId = prevUserIdRef.current;
+    
+    // If user changed (different user logged in) or user logged out, clear persisted data
+    if (prevUserId !== undefined && prevUserId !== currentUserId) {
+      persistedFormData = null;
+      persistedTagIds = null;
+      // Also reset the form state if not editing a trade
+      if (!editingTrade) {
+        setFormData({
+          symbol: '',
+          position_type: getTradeTypeNumber('CALL'),
+          entry_price: '',
+          exit_price: '',
+          quantity: '',
+          entry_date: '',
+          exit_date: '',
+          notes: '',
+          reasoning: '',
+          result: getResultNumber('WIN'),
+          option: '',
+          source: ''
+        });
+        setSelectedTagIds([]);
+      }
+    }
+    
+    prevUserIdRef.current = currentUserId;
+  }, [user?.id, editingTrade]);
   
   // Persist form data whenever it changes (only for new trades, not edits)
   useEffect(() => {
