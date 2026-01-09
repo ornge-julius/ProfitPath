@@ -170,12 +170,13 @@ const TradeForm = ({
     }
 
     try {
-      await onSubmit({
+      const result = await onSubmit({
         ...formData,
         tagIds: selectedTagIds
       });
-      // Reset form after successful submission
-      if (!editingTrade) {
+      // Only reset form after successful submission
+      // onSubmit returns true on success, false on failure
+      if (result && !editingTrade) {
         const emptyFormData = {
           symbol: '',
           position_type: getTradeTypeNumber('CALL'),
@@ -197,7 +198,8 @@ const TradeForm = ({
         persistedTagIds = [];
       }
     } catch (err) {
-      // Error handling
+      // Error handling - if onSubmit throws an error, don't reset the form
+      console.error('Error submitting trade:', err);
     }
   };
 
