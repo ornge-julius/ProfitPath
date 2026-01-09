@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { getResultNumber, getTradeTypeNumber, formatDateForInput } from '../../utils/calculations';
 import ConfirmModal from '../ui/ConfirmModal';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import TagSelector from '../ui/TagSelector';
+
+// Module-level storage to persist form data across component remounts
+// This is more appropriate than localStorage as it's in-memory and session-scoped
+let persistedFormData = null;
+let persistedTagIds = null;
 
 const TradeForm = ({ 
   isOpen, 
@@ -14,25 +19,60 @@ const TradeForm = ({
   onDelete 
 }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [formData, setFormData] = useState({
-    symbol: '',
-    position_type: getTradeTypeNumber('CALL'),
-    entry_price: '',
-    exit_price: '',
-    quantity: '',
-    entry_date: '',
-    exit_date: '',
-    notes: '',
-    reasoning: '',  // changed from reason to reasoning
-    result: getResultNumber('WIN'),
-    option: '',
-    source: ''
+  
+  // Initialize form data from persisted data if available, otherwise use defaults
+  const [formData, setFormData] = useState(() => {
+    if (persistedFormData && !editingTrade) {
+      return persistedFormData;
+    }
+    return {
+      symbol: '',
+      position_type: getTradeTypeNumber('CALL'),
+      entry_price: '',
+      exit_price: '',
+      quantity: '',
+      entry_date: '',
+      exit_date: '',
+      notes: '',
+      reasoning: '',  // changed from reason to reasoning
+      result: getResultNumber('WIN'),
+      option: '',
+      source: ''
+    };
   });
-  const [selectedTagIds, setSelectedTagIds] = useState([]);
+  
+  const [selectedTagIds, setSelectedTagIds] = useState(() => {
+    if (persistedTagIds && !editingTrade) {
+      return persistedTagIds;
+    }
+    return [];
+  });
+  
   const { tags, loading: tagsLoading } = useTagManagement();
-
+  
+  // Track previous editingTrade to detect intentional mode switches
+  const prevEditingTradeRef = useRef(editingTrade);
+  
+  // Persist form data whenever it changes (only for new trades, not edits)
   useEffect(() => {
+    if (!editingTrade) {
+      persistedFormData = formData;
+      persistedTagIds = selectedTagIds;
+    }
+  }, [formData, selectedTagIds, editingTrade]);
+
+  // Only reset form when intentionally switching modes, not on every render
+  useEffect(() => {
+    // Only run when editingTrade actually changed
+    const editingTradeChanged = prevEditingTradeRef.current !== editingTrade;
+    
+    // Don't do anything if editingTrade hasn't changed
+    if (!editingTradeChanged) {
+      return;
+    }
+    
     if (editingTrade) {
+      // We're editing a trade - load the trade data
       const {
         tags: tradeTags,
         profit,
@@ -51,24 +91,51 @@ const TradeForm = ({
         exit_date: formatDateForInput(editingTrade.exit_date)
       });
       setSelectedTagIds((tradeTags || []).map((tag) => tag.id));
-    } else {
-      setFormData({
-        symbol: '',
-        position_type: getTradeTypeNumber('CALL'),
-        entry_price: '',
-        exit_price: '',
-        quantity: '',
-        entry_date: '',
-        exit_date: '',
-        notes: '',
-        reasoning: '',  // changed from reason to reasoning
-        result: getResultNumber('WIN'),
-        option: '',
-        source: ''
+    } else if (prevEditingTradeRef.current !== null) {
+      // Only reset if we're switching FROM editing mode TO new trade mode
+      // Use a functional update to check current state without adding to dependencies
+      setFormData(prevFormData => {
+        // Check if form has user-entered data - if so, preserve it
+        const hasUserData = prevFormData.symbol || prevFormData.entry_price || prevFormData.exit_price || 
+                           prevFormData.quantity || prevFormData.entry_date || prevFormData.exit_date ||
+                           prevFormData.reasoning || prevFormData.notes;
+        
+        // Only reset if form is empty (user hasn't entered anything)
+        if (!hasUserData) {
+          return {
+            symbol: '',
+            position_type: getTradeTypeNumber('CALL'),
+            entry_price: '',
+            exit_price: '',
+            quantity: '',
+            entry_date: '',
+            exit_date: '',
+            notes: '',
+            reasoning: '',
+            result: getResultNumber('WIN'),
+            option: '',
+            source: ''
+          };
+        }
+        // Return previous state to preserve user data
+        return prevFormData;
       });
-      setSelectedTagIds([]);
+      
+      setSelectedTagIds(prevTagIds => {
+        // Only clear tags if form data is being reset (check via formData state)
+        // Since we can't access formData here, we'll preserve tags if they exist
+        // The formData check above handles the main reset logic
+        return prevTagIds;
+      });
     }
-  }, [editingTrade]);
+    // Note: We intentionally do NOT reset the form when:
+    // - User switches tabs/windows (editingTrade hasn't changed)
+    // - Form already has user-entered data (we preserve it)
+    // - Component remounts (formData persists in React state as long as component stays mounted)
+
+    // Update ref
+    prevEditingTradeRef.current = editingTrade;
+  }, [editingTrade]); // Only depend on editingTrade to prevent unnecessary runs
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,6 +152,28 @@ const TradeForm = ({
         ...formData,
         tagIds: selectedTagIds
       });
+      // Reset form after successful submission
+      if (!editingTrade) {
+        const emptyFormData = {
+          symbol: '',
+          position_type: getTradeTypeNumber('CALL'),
+          entry_price: '',
+          exit_price: '',
+          quantity: '',
+          entry_date: '',
+          exit_date: '',
+          notes: '',
+          reasoning: '',
+          result: getResultNumber('WIN'),
+          option: '',
+          source: ''
+        };
+        setFormData(emptyFormData);
+        setSelectedTagIds([]);
+        // Clear persisted data
+        persistedFormData = emptyFormData;
+        persistedTagIds = [];
+      }
     } catch (err) {
       // Error handling
     }
@@ -98,10 +187,10 @@ const TradeForm = ({
     }
   };
 
-  if (!isOpen) return null;
-
+  // Keep component mounted but hidden to preserve state when closed
   return (
-    <div className="mt-32 max-w-7xl mx-auto px-4 sm:px-6">
+    <div className={isOpen ? 'block' : 'hidden'}>
+      <div className="mt-32 max-w-7xl mx-auto px-4 sm:px-6">
       <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">
@@ -312,6 +401,7 @@ const TradeForm = ({
         cancelText="Cancel"
         confirmButtonColor="bg-red-600 hover:bg-red-700"
       />
+      </div>
       </div>
     </div>
   );
