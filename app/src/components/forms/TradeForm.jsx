@@ -49,7 +49,6 @@ const TradeForm = ({
   });
   
   const { tags, loading: tagsLoading } = useTagManagement();
-  
   // Track previous editingTrade to detect intentional mode switches
   const prevEditingTradeRef = useRef(editingTrade);
   
@@ -92,41 +91,28 @@ const TradeForm = ({
       });
       setSelectedTagIds((tradeTags || []).map((tag) => tag.id));
     } else if (prevEditingTradeRef.current !== null) {
-      // Only reset if we're switching FROM editing mode TO new trade mode
-      // Use a functional update to check current state without adding to dependencies
-      setFormData(prevFormData => {
-        // Check if form has user-entered data - if so, preserve it
-        const hasUserData = prevFormData.symbol || prevFormData.entry_price || prevFormData.exit_price || 
-                           prevFormData.quantity || prevFormData.entry_date || prevFormData.exit_date ||
-                           prevFormData.reasoning || prevFormData.notes;
-        
-        // Only reset if form is empty (user hasn't entered anything)
-        if (!hasUserData) {
-          return {
-            symbol: '',
-            position_type: getTradeTypeNumber('CALL'),
-            entry_price: '',
-            exit_price: '',
-            quantity: '',
-            entry_date: '',
-            exit_date: '',
-            notes: '',
-            reasoning: '',
-            result: getResultNumber('WIN'),
-            option: '',
-            source: ''
-          };
-        }
-        // Return previous state to preserve user data
-        return prevFormData;
+      // We're switching FROM editing mode TO new trade mode
+      // Always reset the form in this case - the data came from the edited trade, not user input
+      setFormData({
+        symbol: '',
+        position_type: getTradeTypeNumber('CALL'),
+        entry_price: '',
+        exit_price: '',
+        quantity: '',
+        entry_date: '',
+        exit_date: '',
+        notes: '',
+        reasoning: '',
+        result: getResultNumber('WIN'),
+        option: '',
+        source: ''
       });
       
-      setSelectedTagIds(prevTagIds => {
-        // Only clear tags if form data is being reset (check via formData state)
-        // Since we can't access formData here, we'll preserve tags if they exist
-        // The formData check above handles the main reset logic
-        return prevTagIds;
-      });
+      setSelectedTagIds([]);
+      
+      // Clear persisted data to prevent edited trade data from persisting
+      persistedFormData = null;
+      persistedTagIds = null;
     }
     // Note: We intentionally do NOT reset the form when:
     // - User switches tabs/windows (editingTrade hasn't changed)
