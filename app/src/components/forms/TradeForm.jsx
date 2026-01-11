@@ -253,7 +253,7 @@ const TradeForm = ({
       </div>
       
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Symbol</label>
             <input
@@ -315,7 +315,7 @@ const TradeForm = ({
             />
           </div>
           
-          <div>
+          <div className="sm:col-span-2 xl:col-span-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Quantity</label>
             <input
               type="number"
@@ -349,7 +349,7 @@ const TradeForm = ({
             />
           </div>
           
-          <div>
+          <div className="sm:col-span-2 xl:col-span-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Source</label>
             <input
               type="text"
@@ -360,7 +360,7 @@ const TradeForm = ({
             />
           </div>
           
-          <div className="md:col-span-2">
+          <div className="sm:col-span-2 xl:col-span-3">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Trade</label>
             <input
               type="text"
@@ -385,7 +385,7 @@ const TradeForm = ({
             </select>
           </div>
           
-          <div className="md:col-span-3">
+          <div className="sm:col-span-2 xl:col-span-3">
             <TagSelector
               tags={tags}
               selectedTagIds={selectedTagIds}
@@ -395,7 +395,7 @@ const TradeForm = ({
             />
           </div>
 
-          <div className="md:col-span-3">
+          <div className="sm:col-span-2 xl:col-span-3">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Notes</label>
             <textarea
               placeholder="Any additional thoughts or observations..."
@@ -405,7 +405,7 @@ const TradeForm = ({
             />
           </div>
 
-          <div className="flex gap-2 md:col-span-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:col-span-2 xl:col-span-3">
             <button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-lg font-medium transition-colors flex-1 text-white"
