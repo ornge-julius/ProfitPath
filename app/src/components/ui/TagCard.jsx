@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 
-const TagCard = ({ tag, onEdit, onDelete, canEdit = true }) => {
+const TagCard = ({ tag, onEdit, onDelete, onViewTrades, canEdit = true }) => {
   const tagColor = tag.color || '#3B82F6';
 
   return (
@@ -12,9 +12,14 @@ const TagCard = ({ tag, onEdit, onDelete, canEdit = true }) => {
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: tagColor }}
           />
-          <span className="font-semibold text-gray-900 dark:text-white">
+          <button
+            type="button"
+            onClick={onViewTrades ? () => onViewTrades(tag) : undefined}
+            className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            title={onViewTrades ? 'View trades with this tag' : undefined}
+          >
             {tag.name}
-          </span>
+          </button>
         </div>
         {canEdit && (onEdit || onDelete) && (
           <div className="flex gap-2">
