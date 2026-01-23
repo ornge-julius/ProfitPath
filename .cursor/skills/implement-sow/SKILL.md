@@ -41,8 +41,8 @@ Create a todo list using Cursor's built-in todo system. Structure todos as:
 4. **Polish** (styling, UX refinements)
 
 **Todo naming convention**: Use action verbs and be specific
-- ✅ Good: "Add sticky positioning to first table column"
-- ❌ Vague: "Update table"
+- Good: "Add sticky positioning to first table column"
+- Vague: "Update table"
 
 **Granularity guideline**: Each todo should represent ~5-30 minutes of work. Break large items into subtasks.
 
