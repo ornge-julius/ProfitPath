@@ -44,8 +44,20 @@ export const useAppState = () => {
         ? demoAuthUserId 
         : null;
 
-    // Skip if we already fetched accounts for this user (or demo user)
-    if (targetAuthUserId) {
+    // Check if we're transitioning between users (demo ↔ authenticated or between different users)
+    const isUserTransition = lastFetchedUserIdRef.current !== null && 
+                              lastFetchedUserIdRef.current !== targetAuthUserId;
+
+    // If transitioning users, clear localStorage and reset selected account immediately
+    // This prevents stale demo account IDs from leaking into authenticated sessions
+    if (isUserTransition && typeof window !== 'undefined') {
+      window.localStorage.removeItem('selectedAccountId');
+      // Reset selected account in state to prevent stale references
+      accountsDispatch({ type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT, payload: null });
+    }
+
+    // Skip if we already fetched accounts for this user (or demo user) and not transitioning
+    if (targetAuthUserId && !isUserTransition) {
       if (lastFetchedUserIdRef.current === targetAuthUserId && accountsState.accounts.length > 0) {
         return; // Don't refetch if we already have data for this user
       }
@@ -80,6 +92,7 @@ export const useAppState = () => {
             type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
             payload: []
           });
+          lastFetchedUserIdRef.current = targetAuthUserId;
           return;
         }
 
@@ -110,24 +123,6 @@ export const useAppState = () => {
     fetchAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isAuthenticated, authLoading, isDemoMode, demoAuthUserId]);
-
-  // Clear selectedAccountId from localStorage when transitioning from demo to authenticated mode
-  // This ensures we don't try to select a demo account for an authenticated user
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    // When user authenticates, clear the stored account ID if it was from demo mode
-    if (isAuthenticated && user?.id && lastFetchedUserIdRef.current !== user.id) {
-      const storedAccountId = window.localStorage.getItem('selectedAccountId');
-      // If there's a stored ID but we're about to fetch new accounts, clear it
-      // The reducer will auto-select the first account after fetch completes
-      if (storedAccountId) {
-        window.localStorage.removeItem('selectedAccountId');
-      }
-    }
-  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
