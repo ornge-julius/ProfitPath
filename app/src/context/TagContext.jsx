@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../hooks/useAuth';
+import { useDemoMode } from './DemoModeContext';
 
 const TagContext = createContext(null);
 
@@ -14,11 +15,15 @@ export const useTagContext = () => {
 
 export const TagProvider = ({ children }) => {
   const { user } = useAuth();
+  const { isDemoMode, demoAuthUserId } = useDemoMode();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchTags = useCallback(async () => {
+    // Determine which user ID to use for fetching tags
+    const targetUserId = user?.id || (isDemoMode && demoAuthUserId ? demoAuthUserId : null);
+
     try {
       setLoading(true);
       let query = supabase
@@ -26,10 +31,9 @@ export const TagProvider = ({ children }) => {
         .select('*, trade_tags(id)')
         .order('name', { ascending: true });
 
-      // If user is logged in, filter by user_id
-      // If not logged in, try to fetch all tags (may fail due to RLS)
-      if (user?.id) {
-        query = query.eq('user_id', user.id);
+      // Filter by user_id if we have a target user (authenticated or demo)
+      if (targetUserId) {
+        query = query.eq('user_id', targetUserId);
       }
 
       const { data, error: fetchError } = await query;
@@ -88,7 +92,7 @@ export const TagProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, isDemoMode, demoAuthUserId]);
 
   // Fetch tags when component mounts or user ID changes
   useEffect(() => {

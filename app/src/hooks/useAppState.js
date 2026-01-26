@@ -3,6 +3,7 @@ import { accountsReducer, ACCOUNTS_ACTIONS, initialAccountsState } from '../redu
 import { usersReducer, USERS_ACTIONS, initialUsersState } from '../reducers/usersReducer';
 import { supabase } from '../supabaseClient';
 import { useAuth } from './useAuth';
+import { useDemoMode } from '../context/DemoModeContext';
 
 const initializeAccountsState = () => {
   if (typeof window === 'undefined') {
@@ -25,6 +26,7 @@ const initializeAccountsState = () => {
 
 export const useAppState = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isDemoMode, demoAuthUserId } = useDemoMode();
   const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState, initializeAccountsState);
   const [usersState, usersDispatch] = useReducer(usersReducer, initialUsersState);
   const lastFetchedUserIdRef = useRef(null);
@@ -35,16 +37,23 @@ export const useAppState = () => {
       return;
     }
 
-    // Skip if we already fetched accounts for this user
-    if (isAuthenticated && user?.id) {
-      if (lastFetchedUserIdRef.current === user.id && accountsState.accounts.length > 0) {
+    // Determine which user ID to use for fetching accounts
+    const targetAuthUserId = isAuthenticated && user?.id 
+      ? user.id 
+      : isDemoMode && demoAuthUserId 
+        ? demoAuthUserId 
+        : null;
+
+    // Skip if we already fetched accounts for this user (or demo user)
+    if (targetAuthUserId) {
+      if (lastFetchedUserIdRef.current === targetAuthUserId && accountsState.accounts.length > 0) {
         return; // Don't refetch if we already have data for this user
       }
     }
 
     const fetchAccounts = async () => {
-      // Don't fetch if user is not authenticated
-      if (!isAuthenticated || !user) {
+      // Don't fetch if no target user ID
+      if (!targetAuthUserId) {
         accountsDispatch({
           type: ACCOUNTS_ACTIONS.SET_ACCOUNTS,
           payload: []
@@ -54,12 +63,11 @@ export const useAppState = () => {
       }
 
       try {
-        // Fetch all accounts for the authenticated user
-        // Use auth.uid() via RLS or explicitly filter by user_id
+        // Fetch all accounts for the authenticated user or demo user
         const { data: accountsData, error: accountsError } = await supabase
           .from('accounts')
           .select('*')
-          .eq('auth_user_id', user.id)
+          .eq('auth_user_id', targetAuthUserId)
           .order('created_at', { ascending: false });
           
         if (accountsError) {
@@ -92,8 +100,8 @@ export const useAppState = () => {
           payload: mappedAccounts
         });
 
-        // Track that we've fetched for this user
-        lastFetchedUserIdRef.current = user.id;
+        // Track that we've fetched for this user (or demo user)
+        lastFetchedUserIdRef.current = targetAuthUserId;
       } catch (err) {
         // Error handled silently
       }
@@ -101,7 +109,25 @@ export const useAppState = () => {
 
     fetchAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, isAuthenticated, authLoading]);
+  }, [user?.id, isAuthenticated, authLoading, isDemoMode, demoAuthUserId]);
+
+  // Clear selectedAccountId from localStorage when transitioning from demo to authenticated mode
+  // This ensures we don't try to select a demo account for an authenticated user
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    // When user authenticates, clear the stored account ID if it was from demo mode
+    if (isAuthenticated && user?.id && lastFetchedUserIdRef.current !== user.id) {
+      const storedAccountId = window.localStorage.getItem('selectedAccountId');
+      // If there's a stored ID but we're about to fetch new accounts, clear it
+      // The reducer will auto-select the first account after fetch completes
+      if (storedAccountId) {
+        window.localStorage.removeItem('selectedAccountId');
+      }
+    }
+  }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
     if (typeof window === 'undefined') {

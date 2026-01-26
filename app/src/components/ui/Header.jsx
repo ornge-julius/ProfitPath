@@ -13,6 +13,7 @@ import AccountSelector from './AccountSelector';
 import GlobalDateFilter from './GlobalDateFilter';
 import GlobalTagFilter from './GlobalTagFilter';
 import { useTheme } from '../../context/ThemeContext';
+import { useDemoMode } from '../../context/DemoModeContext';
 import logoImage from '../../assets/FullLogo_Transparent.png';
 
 const Header = ({
@@ -30,6 +31,7 @@ const Header = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toggleTheme, isDark } = useTheme();
+  const { isDemoMode } = useDemoMode();
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const closeMenu = () => setIsMenuOpen(false);
@@ -51,7 +53,7 @@ const Header = ({
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 backdrop-blur-lg bg-white/95 dark:bg-gray-600/80 shadow-lg hover:shadow-xl pb-3">
+    <header className={`fixed left-0 right-0 z-30 backdrop-blur-lg bg-white/95 dark:bg-gray-600/80 shadow-lg hover:shadow-xl pb-3 transition-[top] duration-200 ${isDemoMode ? 'top-20 sm:top-11' : 'top-0'}`}>
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
         <div className="flex h-16 items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-3 flex-shrink-0 self-center">
