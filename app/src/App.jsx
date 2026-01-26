@@ -19,7 +19,9 @@ import { DateFilterProvider } from './context/DateFilterContext';
 import { TagFilterProvider } from './context/TagFilterContext';
 import { TagProvider } from './context/TagContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { DemoModeProvider, useDemoMode } from './context/DemoModeContext';
 import BottomNavDock from './components/ui/BottomNavDock';
+import DemoModeBanner from './components/ui/DemoModeBanner';
 
 function AppContent() {
   const [showAccountEditForm, setShowAccountEditForm] = useState(false);
@@ -31,6 +33,7 @@ function AppContent() {
 
   // Authentication state
   const { user, isAuthenticated, isLoading: authLoading, signInWithEmail, signOut } = useAuth();
+  const { isDemoMode } = useDemoMode();
 
   const {
     startingBalance,
@@ -264,6 +267,7 @@ function AppContent() {
 
     return (
       <>
+        <DemoModeBanner onSignIn={handleSignIn} />
         <Header
           onToggleSettings={handleToggleSettings}
           onToggleTradeForm={handleToggleTradeForm}
@@ -319,22 +323,22 @@ function AppContent() {
 
       {/* Loading State */}
       {authLoading ? (
-        <div className="text-center py-12">
+        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-300">Loading authentication...</p>
         </div>
       ) : isAccountLoading ? (
-        <div className="text-center py-12">
+        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-300">Loading account data...</p>
         </div>
       ) : !selectedAccountId ? (
-        <div className="text-center py-12">
+        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
           <p className="text-gray-300 text-lg mb-4">No account selected</p>
           <p className="text-gray-400">Please select an account to view trades and metrics.</p>
         </div>
       ) : (
-          <div className="pt-24">
+          <div className={isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}>
             <Outlet />
           </div>
         )}
@@ -354,17 +358,26 @@ function AppContent() {
         <Route
           path="/detail/:tradeId"
           element={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 pt-24">
-              <TradeDetailPage
-                trades={trades}
-                editingTrade={editingTrade}
-                onEdit={handleTradeEdit}
-                onSubmit={handleTradeSubmit}
-                onCancelEdit={handleCancelDetailEdit}
-                onDelete={handleTradeDelete}
-                isAuthenticated={isAuthenticated}
+            <>
+              <DemoModeBanner onSignIn={handleSignIn} />
+              <div className={`max-w-7xl mx-auto px-4 sm:px-6 pb-24 ${isDemoMode ? 'pt-28 sm:pt-16' : 'pt-8'}`}>
+                <TradeDetailPage
+                  trades={trades}
+                  editingTrade={editingTrade}
+                  onEdit={handleTradeEdit}
+                  onSubmit={handleTradeSubmit}
+                  onCancelEdit={handleCancelDetailEdit}
+                  onDelete={handleTradeDelete}
+                  isAuthenticated={isAuthenticated}
+                />
+              </div>
+              {/* Sign In Form for detail page */}
+              <SignInForm
+                isOpen={showSignInForm}
+                onClose={handleCloseSignInForm}
+                onSignIn={handleSignInSubmit}
               />
-            </div>
+            </>
           }
         />
         <Route path="/" element={<MainLayout />}>
@@ -414,17 +427,19 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <DateFilterProvider>
-        <TagFilterProvider>
-          <TagProvider>
-            <BrowserRouter>
-              <AppContent />
-              <SpeedInsights />
-              <Analytics />
-            </BrowserRouter>
-          </TagProvider>
-        </TagFilterProvider>
-      </DateFilterProvider>
+      <DemoModeProvider>
+        <DateFilterProvider>
+          <TagFilterProvider>
+            <TagProvider>
+              <BrowserRouter>
+                <AppContent />
+                <SpeedInsights />
+                <Analytics />
+              </BrowserRouter>
+            </TagProvider>
+          </TagFilterProvider>
+        </DateFilterProvider>
+      </DemoModeProvider>
     </ThemeProvider>
   );
 }
