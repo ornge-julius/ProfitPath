@@ -360,7 +360,7 @@ function AppContent() {
           element={
             <>
               <DemoModeBanner onSignIn={handleSignIn} />
-              <div className={`max-w-7xl mx-auto px-4 sm:px-6 pb-24 ${isDemoMode ? 'pt-20 sm:pt-12' : 'pt-24'}`}>
+              <div className={`max-w-7xl mx-auto px-4 sm:px-6 pb-24 ${isDemoMode ? 'pt-28 sm:pt-16' : 'pt-8'}`}>
                 <TradeDetailPage
                   trades={trades}
                   editingTrade={editingTrade}
