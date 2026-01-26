@@ -54,6 +54,55 @@ const TradeHistoryTable = ({ trades, title }) => {
         ),
       },
       {
+        accessorKey: 'tags',
+        header: 'Tags',
+        size: 180,
+        enableSorting: false,
+        Cell: ({ row }) => (
+          <div className="flex flex-wrap gap-1.5 max-w-44">
+            {row.original.tags && row.original.tags.length > 0 ? (
+              row.original.tags.map((tag) => (
+                <TagBadge key={tag.id} tag={tag} size="small" />
+              ))
+            ) : (
+              <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'result',
+        header: 'Result',
+        size: 90,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          if (value === undefined || value === null) {
+            return <span className="text-gray-500 dark:text-gray-500 text-sm">-</span>;
+          }
+          return (
+            <span
+              className={`px-2 py-1 rounded text-xs font-medium ${
+                isWin(value)
+                  ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
+              }`}
+            >
+              {getResultText(value)}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'profit',
+        header: 'Profit',
+        size: 100,
+        Cell: ({ cell }) => (
+          <span className={`font-bold ${cell.getValue() >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+            ${cell.getValue()?.toLocaleString() || '0'}
+          </span>
+        ),
+      },
+      {
         accessorKey: 'entry_price',
         header: 'Entry Price',
         size: 110,
@@ -106,38 +155,6 @@ const TradeHistoryTable = ({ trades, title }) => {
         ),
       },
       {
-        accessorKey: 'profit',
-        header: 'Profit',
-        size: 100,
-        Cell: ({ cell }) => (
-          <span className={`font-bold ${cell.getValue() >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            ${cell.getValue()?.toLocaleString() || '0'}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'result',
-        header: 'Result',
-        size: 90,
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          if (value === undefined || value === null) {
-            return <span className="text-gray-500 dark:text-gray-500 text-sm">-</span>;
-          }
-          return (
-            <span
-              className={`px-2 py-1 rounded text-xs font-medium ${
-                isWin(value)
-                  ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300'
-                  : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
-              }`}
-            >
-              {getResultText(value)}
-            </span>
-          );
-        },
-      },
-      {
         accessorKey: 'reasoning',
         header: 'Reason',
         size: 150,
@@ -162,23 +179,6 @@ const TradeHistoryTable = ({ trades, title }) => {
             title={cell.getValue() || ''}
           >
             {cell.getValue() || '-'}
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'tags',
-        header: 'Tags',
-        size: 180,
-        enableSorting: false,
-        Cell: ({ row }) => (
-          <div className="flex flex-wrap gap-1.5 max-w-44">
-            {row.original.tags && row.original.tags.length > 0 ? (
-              row.original.tags.map((tag) => (
-                <TagBadge key={tag.id} tag={tag} size="small" />
-              ))
-            ) : (
-              <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
-            )}
           </div>
         ),
       },
@@ -209,6 +209,7 @@ const TradeHistoryTable = ({ trades, title }) => {
     enableColumnPinning: true,
     enableSorting: true,
     enablePagination: true,
+    enableStickyHeader: true,
     enableColumnResizing: false,
     enableDensityToggle: false,
     enableFullScreenToggle: false,
