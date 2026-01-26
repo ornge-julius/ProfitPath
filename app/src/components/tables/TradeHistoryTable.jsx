@@ -55,7 +55,7 @@ const TradeHistoryTable = ({ trades, title }) => {
         <table className="w-full">
           <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
-              <th className="text-left py-4 px-6 font-medium text-gray-700 dark:text-gray-300">Symbol</th>
+              <th className="text-left py-4 px-6 font-medium text-gray-700 dark:text-gray-300 sticky left-0 z-20 bg-gray-50 dark:bg-gray-700 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)]">Symbol</th>
               <th className="text-left py-4 px-6 font-medium text-gray-700 dark:text-gray-300">Option</th>
               <th className="text-left py-4 px-6 font-medium text-gray-700 dark:text-gray-300">Type</th>
               <th className="text-left py-4 px-6 font-medium text-gray-700 dark:text-gray-300">Entry Price</th>
@@ -77,8 +77,8 @@ const TradeHistoryTable = ({ trades, title }) => {
               const formattedExitDate = formatDate(trade.exit_date);
 
               return (
-              <tr key={trade.id} className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                <td className="py-4 px-6">
+              <tr key={trade.id} className="group border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                <td className="py-4 px-6 sticky left-0 z-[5] bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700/30 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)]">
                   <Link
                     to={`/detail/${trade.id}`}
                     state={{ from: `${location.pathname}${location.search}` }}
