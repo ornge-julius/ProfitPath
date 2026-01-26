@@ -57,9 +57,21 @@ function descendingComparator(a, b, orderBy, type) {
 
 // Get comparator based on order direction
 function getComparator(order, orderBy, type) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy, type)
-    : (a, b) => -descendingComparator(a, b, orderBy, type);
+  return (a, b) => {
+    // Handle null/undefined values first - always sort them to the end regardless of direction
+    const aValue = a[orderBy];
+    const bValue = b[orderBy];
+    const aIsNull = aValue === null || aValue === undefined || aValue === '';
+    const bIsNull = bValue === null || bValue === undefined || bValue === '';
+    
+    if (aIsNull && bIsNull) return 0;
+    if (aIsNull) return 1;  // Always place nulls at the end
+    if (bIsNull) return -1; // Always place nulls at the end
+    
+    // For non-null values, apply direction logic
+    const result = descendingComparator(a, b, orderBy, type);
+    return order === 'desc' ? result : -result;
+  };
 }
 
 // Stable sort with secondary sort by exit_date descending
@@ -90,8 +102,20 @@ const TradeHistoryTable = ({ trades, title }) => {
     const column = COLUMNS.find((c) => c.id === property);
     if (!column || !column.sortable) return;
 
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
+    // If clicking the same column, toggle the order
+    if (orderBy === property) {
+      const isAsc = order === 'asc';
+      setOrder(isAsc ? 'desc' : 'asc');
+    } else {
+      // If clicking a new column, set initial order based on column type
+      // Numeric and date columns start descending (highest/newest first)
+      // String columns start ascending (A-Z)
+      if (column.type === 'number' || column.type === 'date') {
+        setOrder('desc');
+      } else {
+        setOrder('asc');
+      }
+    }
     setOrderBy(property);
     setCurrentPage(1); // Reset to first page on sort change
   };
