@@ -100,6 +100,7 @@ export const useAppState = () => {
     };
 
     fetchAccounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isAuthenticated, authLoading]);
 
   useEffect(() => {

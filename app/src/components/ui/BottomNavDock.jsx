@@ -6,16 +6,12 @@ import {
   LayoutDashboard,
   Tag,
   TrendingUpDown,
-  Sun,
-  Moon,
   Plus
 } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
 
 const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toggleTheme, isDark } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
