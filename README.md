@@ -1,8 +1,7 @@
 <img width="800" height="800" alt="FullLogo_Transparent" src="https://github.com/user-attachments/assets/9c636134-6144-411d-a2d2-ee71d99d4757" /> 
 
 # ProfitPath
-A sophisticated React application for tracking and analyzing options trading performance, featuring a modern "Monochrome Luxe" design system with light/dark themes.
-
+This project combines my two passions, coding and trading. I built this application to better understand my trading habits and strategies. The purpose of this app is to help tracking my path to profitability.
 ## Features
 
 ### Core Trading Features
