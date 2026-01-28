@@ -9,16 +9,16 @@ const COLUMNS = [
   { id: 'symbol', label: 'Symbol', sortable: true, type: 'string' },
   { id: 'option', label: 'Option', sortable: true, type: 'string' },
   { id: 'position_type', label: 'Type', sortable: true, type: 'number' },
+  { id: 'result', label: 'Result', sortable: true, type: 'number' },
+  { id: 'profit', label: 'P&L', sortable: true, type: 'number' },
+  { id: 'tags', label: 'Tags', sortable: false },
+  { id: 'entry_date', label: 'Entry Date', sortable: true, type: 'date' },
+  { id: 'exit_date', label: 'Exit Date', sortable: true, type: 'date' },
   { id: 'entry_price', label: 'Entry', sortable: true, type: 'number' },
   { id: 'exit_price', label: 'Exit', sortable: true, type: 'number' },
   { id: 'quantity', label: 'Qty', sortable: true, type: 'number' },
-  { id: 'entry_date', label: 'Entry Date', sortable: true, type: 'date' },
-  { id: 'exit_date', label: 'Exit Date', sortable: true, type: 'date' },
-  { id: 'profit', label: 'P&L', sortable: true, type: 'number' },
-  { id: 'result', label: 'Result', sortable: true, type: 'number' },
   { id: 'reasoning', label: 'Reason', sortable: false },
   { id: 'source', label: 'Source', sortable: false },
-  { id: 'tags', label: 'Tags', sortable: false },
   { id: 'notes', label: 'Notes', sortable: false },
 ];
 
@@ -248,6 +248,51 @@ const TradeHistoryTable = ({ trades, title }) => {
                       </span>
                     </td>
 
+                    {/* Result */}
+                    <td className="py-3 px-4">
+                      {trade.result !== undefined ? (
+                        <span className={`badge ${
+                          isWin(trade.result) ? 'badge-win' : 'badge-loss'
+                        }`}>
+                          {getResultText(trade.result)}
+                        </span>
+                      ) : (
+                        <span className="text-text-muted text-xs">—</span>
+                      )}
+                    </td>
+
+                    {/* Profit */}
+                    <td className="py-3 px-4">
+                      <span className={`font-mono text-sm font-medium ${
+                        trade.profit >= 0 ? 'text-gold' : 'text-loss'
+                      }`}>
+                        {trade.profit >= 0 ? '+' : ''}${trade.profit.toLocaleString()}
+                      </span>
+                    </td>
+
+                    {/* Tags */}
+                    <td className="py-3 px-4">
+                      <div className="flex flex-wrap gap-1 max-w-36">
+                        {trade.tags && trade.tags.length > 0 ? (
+                          trade.tags.map((tag) => (
+                            <TagBadge key={tag.id} tag={tag} size="small" />
+                          ))
+                        ) : (
+                          <span className="text-text-muted text-xs">—</span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Entry Date */}
+                    <td className="py-3 px-4 font-mono text-xs text-text-muted">
+                      {formattedEntryDate}
+                    </td>
+
+                    {/* Exit Date */}
+                    <td className="py-3 px-4 font-mono text-xs text-text-muted">
+                      {formattedExitDate}
+                    </td>
+
                     {/* Entry Price */}
                     <td className="py-3 px-4 font-mono text-sm text-text-secondary">
                       ${trade.entry_price.toFixed(2)}
@@ -263,38 +308,6 @@ const TradeHistoryTable = ({ trades, title }) => {
                       {trade.quantity}
                     </td>
 
-                    {/* Entry Date */}
-                    <td className="py-3 px-4 font-mono text-xs text-text-muted">
-                      {formattedEntryDate}
-                    </td>
-
-                    {/* Exit Date */}
-                    <td className="py-3 px-4 font-mono text-xs text-text-muted">
-                      {formattedExitDate}
-                    </td>
-
-                    {/* Profit */}
-                    <td className="py-3 px-4">
-                      <span className={`font-mono text-sm font-medium ${
-                        trade.profit >= 0 ? 'text-gold' : 'text-loss'
-                      }`}>
-                        {trade.profit >= 0 ? '+' : ''}${trade.profit.toLocaleString()}
-                      </span>
-                    </td>
-
-                    {/* Result */}
-                    <td className="py-3 px-4">
-                      {trade.result !== undefined ? (
-                        <span className={`badge ${
-                          isWin(trade.result) ? 'badge-win' : 'badge-loss'
-                        }`}>
-                          {getResultText(trade.result)}
-                        </span>
-                      ) : (
-                        <span className="text-text-muted text-xs">—</span>
-                      )}
-                    </td>
-
                     {/* Reasoning */}
                     <td className="py-3 px-4">
                       <span className="font-mono text-xs text-text-secondary max-w-40 truncate block" title={trade.reasoning}>
@@ -307,19 +320,6 @@ const TradeHistoryTable = ({ trades, title }) => {
                       <span className="font-mono text-xs text-text-muted max-w-24 truncate block" title={trade.source}>
                         {trade.source || '—'}
                       </span>
-                    </td>
-
-                    {/* Tags */}
-                    <td className="py-3 px-4">
-                      <div className="flex flex-wrap gap-1 max-w-36">
-                        {trade.tags && trade.tags.length > 0 ? (
-                          trade.tags.map((tag) => (
-                            <TagBadge key={tag.id} tag={tag} size="small" />
-                          ))
-                        ) : (
-                          <span className="text-text-muted text-xs">—</span>
-                        )}
-                      </div>
                     </td>
 
                     {/* Notes */}
