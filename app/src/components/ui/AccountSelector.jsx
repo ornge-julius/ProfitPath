@@ -59,30 +59,30 @@ const AccountSelector = ({
       {/* Account Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 min-w-[200px] justify-between border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+        className="w-full bg-bg-surface hover:bg-bg-elevated px-4 py-3 rounded-lg font-mono text-sm transition-colors flex items-center justify-between border border-border hover:border-border-accent text-text-primary"
       >
         <span className="truncate">
           {selectedAccount ? selectedAccount.name : 'Select Account'}
         </span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 text-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-bg-card border border-border rounded-lg shadow-luxe-lg z-50">
           {/* Current Account Info */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{selectedAccount?.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Balance: ${selectedAccount?.currentBalance?.toLocaleString() || 0}
+                <h3 className="font-display text-lg text-text-primary">{selectedAccount?.name}</h3>
+                <p className="font-mono text-xs text-text-muted">
+                  ${selectedAccount?.currentBalance?.toLocaleString() || 0}
                 </p>
               </div>
               {isAuthenticated && (
                 <button
                   onClick={() => onEditAccount(selectedAccount)}
-                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
                 >
                   <Settings className="h-4 w-4" />
                 </button>
@@ -91,52 +91,50 @@ const AccountSelector = ({
           </div>
 
           {/* Account List */}
-          <div className="max-h-60 overflow-y-auto">
+          <div className="max-h-48 overflow-y-auto">
             {accounts.map((account) => (
               <div
                 key={account.id}
-                className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
-                  account.id === selectedAccountId ? 'bg-gray-50 dark:bg-gray-700' : ''
+                className={`px-4 py-3 hover:bg-bg-elevated cursor-pointer transition-colors flex items-center justify-between ${
+                  account.id === selectedAccountId ? 'bg-bg-surface' : ''
                 }`}
                 onClick={() => {
                   onSelectAccount(account.id);
                   setIsOpen(false);
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-gray-900 dark:text-white">{account.name}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      ${account.currentBalance?.toLocaleString() || 0}
-                    </div>
+                <div>
+                  <div className="font-mono text-sm text-text-primary">{account.name}</div>
+                  <div className="font-mono text-xs text-text-muted">
+                    ${account.currentBalance?.toLocaleString() || 0}
                   </div>
-                  {isAuthenticated && accounts.length > 1 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteAccount(account.id);
-                      }}
-                      className="text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
-                      title="Delete Account"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
                 </div>
+                {isAuthenticated && accounts.length > 1 && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteAccount(account.id);
+                    }}
+                    className="h-7 w-7 flex items-center justify-center rounded-lg hover:bg-bg-card text-text-muted hover:text-loss transition-all"
+                    title="Delete Account"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
             ))}
           </div>
 
           {/* Add New Account */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-border">
             {isAuthenticated ? (
               !showAddForm ? (
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  className="btn-secondary w-full flex items-center justify-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Add New Account
+                  Add Account
                 </button>
               ) : (
                 <form onSubmit={handleAddAccount} className="space-y-3">
@@ -145,7 +143,7 @@ const AccountSelector = ({
                     placeholder="Account Name"
                     value={newAccountName}
                     onChange={(e) => setNewAccountName(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    className="input-luxe text-sm"
                     required
                   />
                   <input
@@ -153,7 +151,7 @@ const AccountSelector = ({
                     placeholder="Starting Balance"
                     value={newAccountBalance}
                     onChange={(e) => setNewAccountBalance(e.target.value)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    className="input-luxe text-sm"
                     step="0.01"
                     min="0"
                     required
@@ -161,7 +159,7 @@ const AccountSelector = ({
                   <div className="flex gap-2">
                     <button
                       type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="btn-primary flex-1 py-2"
                     >
                       Add
                     </button>
@@ -172,7 +170,7 @@ const AccountSelector = ({
                         setNewAccountName('');
                         setNewAccountBalance('');
                       }}
-                      className="flex-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-900 dark:text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="btn-secondary flex-1 py-2"
                     >
                       Cancel
                     </button>
@@ -181,11 +179,11 @@ const AccountSelector = ({
               )
             ) : (
               <div className="space-y-3 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">Sign in to add or manage accounts.</p>
+                <p className="font-mono text-xs text-text-muted">Sign in to manage accounts</p>
                 <button
                   type="button"
                   onClick={handleRequireAuthentication}
-                  className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2"
+                  className="btn-primary w-full flex items-center justify-center gap-2"
                 >
                   <LogIn className="h-4 w-4" />
                   Sign In
@@ -196,7 +194,7 @@ const AccountSelector = ({
         </div>
       )}
 
-      {/* Backdrop to close dropdown */}
+      {/* Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40"

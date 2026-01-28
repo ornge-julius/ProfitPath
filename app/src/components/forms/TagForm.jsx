@@ -49,24 +49,29 @@ const TagForm = ({ isOpen, onClose, onSubmit, editingTag }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">
-          {editingTag ? 'Edit Tag' : 'Create New Tag'}
-        </h3>
+    <div className="card-luxe p-6 mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="font-display text-xl text-text-primary">
+            {editingTag ? 'Edit Tag' : 'Create Tag'}
+          </h3>
+          <p className="font-mono text-xs text-text-muted mt-1">
+            {editingTag ? 'Update tag details' : 'Add a new tag to organize trades'}
+          </p>
+        </div>
         <button
           onClick={onClose}
-          className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4 text-text-muted" />
         </button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Tag Name *
+            <label className="label-luxe">
+              Tag Name
             </label>
             <input
               type="text"
@@ -75,40 +80,43 @@ const TagForm = ({ isOpen, onClose, onSubmit, editingTag }) => {
                 setFormData({ ...formData, name: e.target.value });
                 if (errors.name) setErrors({ ...errors, name: null });
               }}
-              className={`w-full bg-white dark:bg-gray-700 border rounded-lg px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 ${
-                errors.name ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 dark:border-gray-600 focus:ring-blue-500'
-              }`}
+              className={`input-luxe ${errors.name ? 'border-loss focus:border-loss' : ''}`}
               placeholder="e.g., Options, Swing Trade, Day Trade"
               required
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+              <p className="mt-2 font-mono text-xs text-loss">{errors.name}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Color (Optional)
+            <label className="label-luxe">
+              Color
             </label>
-            <input
-              type="color"
-              value={formData.color || '#3B82F6'}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              className="w-full h-12 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer"
-            />
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={formData.color || '#C9A962'}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                className="w-12 h-12 bg-bg-surface border border-border rounded-lg cursor-pointer"
+              />
+              <span className="font-mono text-xs text-text-muted">
+                {formData.color || '#C9A962'}
+              </span>
+            </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-lg font-medium transition-colors flex-1 text-white"
+              className="btn-primary flex-1"
             >
               {editingTag ? 'Update Tag' : 'Create Tag'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-700 px-4 py-3 rounded-lg font-medium transition-colors text-gray-900 dark:text-white"
+              className="btn-secondary"
             >
               Cancel
             </button>
@@ -120,4 +128,3 @@ const TagForm = ({ isOpen, onClose, onSubmit, editingTag }) => {
 };
 
 export default TagForm;
-

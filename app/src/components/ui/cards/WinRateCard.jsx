@@ -1,23 +1,13 @@
 import React, { useMemo } from 'react';
-import { Info } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-
-const WIN_COLOR = '#10B981';
-const LOSS_COLOR = '#111827';
+import { useTheme } from '../../../context/ThemeContext';
 
 const clampPercentage = (value) => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return 0;
   }
-
-  if (value < 0) {
-    return 0;
-  }
-
-  if (value > 100) {
-    return 100;
-  }
-
+  if (value < 0) return 0;
+  if (value > 100) return 100;
   return value;
 };
 
@@ -27,6 +17,14 @@ const WinRateCard = ({
   losingTrades = 0,
   totalTrades,
 }) => {
+  const { isDark } = useTheme();
+  
+  // Theme-aware colors
+  const colors = {
+    win: isDark ? '#C9A962' : '#6B8E23',
+    loss: isDark ? '#32323A' : '#E5E0D8',
+  };
+
   const validWinRate = clampPercentage(winRate);
   const lossRate = 100 - validWinRate;
 
@@ -35,72 +33,80 @@ const WinRateCard = ({
 
   const chartData = useMemo(() => {
     const baseData = [
-      { name: 'Wins', value: validWinRate, color: WIN_COLOR },
-      { name: 'Losses', value: lossRate, color: LOSS_COLOR },
+      { name: 'Wins', value: validWinRate, color: colors.win },
+      { name: 'Losses', value: lossRate, color: colors.loss },
     ];
 
     if (validWinRate === 0 && lossRate === 0) {
       return [
-        { name: 'Wins', value: 0, color: WIN_COLOR },
-        { name: 'Losses', value: 100, color: LOSS_COLOR },
+        { name: 'Wins', value: 0, color: colors.win },
+        { name: 'Losses', value: 100, color: colors.loss },
       ];
     }
 
     return baseData;
-  }, [lossRate, validWinRate]);
+  }, [lossRate, validWinRate, colors.win, colors.loss]);
 
   const displayTotalTrades = Number.isFinite(totalTrades) && totalTrades > 0 ? Math.round(totalTrades) : 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-gray-800/70 transition-all">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Win Rate</h3>
-          <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-        </div>
-        <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Trades</h3>
+    <div className="card-luxe p-5 h-full">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-1">
+        <span className="stat-label">Win Rate</span>
+        <span className="stat-label">Total</span>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{validWinRate.toFixed(2)}%</p>
-        <p className="text-2xl font-bold text-gray-900 dark:text-white">{displayTotalTrades.toLocaleString()}</p>
+      {/* Values */}
+      <div className="flex items-baseline justify-between mb-4">
+        <span className="font-display text-3xl text-text-primary tracking-tight">
+          {validWinRate.toFixed(1)}%
+        </span>
+        <span className="font-mono text-xl text-text-secondary">
+          {displayTotalTrades.toLocaleString()}
+        </span>
       </div>
 
-      <div className="h-28">
+      {/* Chart */}
+      <div className="h-24 -mx-2">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              startAngle={-90}
-              endAngle={270}
-              innerRadius={0}
-              outerRadius={56}
+              startAngle={90}
+              endAngle={-270}
+              innerRadius={28}
+              outerRadius={44}
               dataKey="value"
-              stroke="#FFFFFF"
-              strokeWidth={2}
-              strokeOpacity={0.25}
-              labelLine={false}
+              stroke="transparent"
+              strokeWidth={0}
             >
               {chartData.map((entry, index) => (
-                <Cell key={`win-rate-segment-${entry.name}-${index}`} fill={entry.color} stroke="#FFFFFF" strokeWidth={1} strokeOpacity={0.25} />
+                <Cell 
+                  key={`win-rate-segment-${entry.name}-${index}`} 
+                  fill={entry.color}
+                />
               ))}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 flex items-center justify-around text-xs">
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 mt-3">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: WIN_COLOR }} />
-          <span className="font-medium text-gray-900 dark:text-white">{wins.toLocaleString()}</span>
-          <span className="text-gray-600 dark:text-gray-500">Wins</span>
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.win }} />
+          <span className="font-mono text-xs text-text-secondary">
+            {wins} <span className="text-text-muted">W</span>
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: LOSS_COLOR }} />
-          <span className="font-medium text-gray-900 dark:text-white">{losses.toLocaleString()}</span>
-          <span className="text-gray-600 dark:text-gray-500">Losses</span>
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.loss }} />
+          <span className="font-mono text-xs text-text-secondary">
+            {losses} <span className="text-text-muted">L</span>
+          </span>
         </div>
       </div>
     </div>

@@ -200,7 +200,6 @@ function AppContent() {
       await addAccount(accountData);
     } catch (error) {
       console.error('Failed to add account:', error);
-      // You could show a user-friendly error message here
     }
   };
 
@@ -222,7 +221,6 @@ function AppContent() {
       setEditingAccount(null);
     } catch (error) {
       console.error('Failed to update account:', error);
-      // You could show a user-friendly error message here
     }
   };
 
@@ -235,7 +233,6 @@ function AppContent() {
         await deleteAccount(accountId);
       } catch (error) {
         console.error('Failed to delete account:', error);
-        // You could show a user-friendly error message here
       }
     }
   };
@@ -323,19 +320,19 @@ function AppContent() {
 
       {/* Loading State */}
       {authLoading ? (
-        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading authentication...</p>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+          <div className="spinner mb-4"></div>
+          <p className="font-mono text-sm text-text-secondary tracking-wide">Loading authentication...</p>
         </div>
       ) : isAccountLoading ? (
-        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading account data...</p>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+          <div className="spinner mb-4"></div>
+          <p className="font-mono text-sm text-text-secondary tracking-wide">Loading account data...</p>
         </div>
       ) : !selectedAccountId ? (
-        <div className={`text-center py-12 ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
-          <p className="text-gray-300 text-lg mb-4">No account selected</p>
-          <p className="text-gray-400">Please select an account to view trades and metrics.</p>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+          <p className="font-display text-2xl text-text-primary mb-2">No Account Selected</p>
+          <p className="font-mono text-sm text-text-muted">Select an account to view your trading data.</p>
         </div>
       ) : (
           <div className={isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}>
@@ -343,7 +340,7 @@ function AppContent() {
           </div>
         )}
         
-        {/* Bottom Navigation Dock - only visible on main routes */}
+        {/* Bottom Navigation Dock */}
         <BottomNavDock
           onToggleTradeForm={handleToggleTradeForm}
           showTradeForm={showTradeForm}
@@ -353,73 +350,79 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 text-gray-900 dark:text-white overflow-x-hidden">
-      <Routes>
-        <Route
-          path="/detail/:tradeId"
-          element={
-            <>
-              <DemoModeBanner onSignIn={handleSignIn} />
-              <div className={`max-w-7xl mx-auto px-4 sm:px-6 pb-24 ${isDemoMode ? 'pt-28 sm:pt-16' : 'pt-8'}`}>
-                <TradeDetailPage
-                  trades={trades}
-                  editingTrade={editingTrade}
-                  onEdit={handleTradeEdit}
-                  onSubmit={handleTradeSubmit}
-                  onCancelEdit={handleCancelDetailEdit}
-                  onDelete={handleTradeDelete}
-                  isAuthenticated={isAuthenticated}
-                />
-              </div>
-              {/* Sign In Form for detail page */}
-              <SignInForm
-                isOpen={showSignInForm}
-                onClose={handleCloseSignInForm}
-                onSignIn={handleSignInSubmit}
-              />
-            </>
-          }
-        />
-        <Route path="/" element={<MainLayout />}>
+    <div className="min-h-screen bg-bg-primary text-text-primary overflow-x-hidden transition-colors duration-300">
+      {/* Subtle gradient overlay */}
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'var(--gradient-surface)' }} />
+      
+      {/* Main content */}
+      <div className="relative z-10">
+        <Routes>
           <Route
-            index
+            path="/detail/:tradeId"
             element={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <DashboardView
-                  trades={trades}
-                  startingBalance={startingBalance}
+              <>
+                <DemoModeBanner onSignIn={handleSignIn} />
+                <div className={`max-w-6xl mx-auto px-6 sm:px-8 pb-24 ${isDemoMode ? 'pt-28 sm:pt-16' : 'pt-8'}`}>
+                  <TradeDetailPage
+                    trades={trades}
+                    editingTrade={editingTrade}
+                    onEdit={handleTradeEdit}
+                    onSubmit={handleTradeSubmit}
+                    onCancelEdit={handleCancelDetailEdit}
+                    onDelete={handleTradeDelete}
+                    isAuthenticated={isAuthenticated}
+                  />
+                </div>
+                {/* Sign In Form for detail page */}
+                <SignInForm
+                  isOpen={showSignInForm}
+                  onClose={handleCloseSignInForm}
+                  onSignIn={handleSignInSubmit}
                 />
-              </div>
+              </>
             }
           />
-          <Route
-            path="comparison"
-            element={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <TradeBatchComparisonView
-                  trades={trades}
-                />
+          <Route path="/" element={<MainLayout />}>
+            <Route
+              index
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <DashboardView
+                    trades={trades}
+                    startingBalance={startingBalance}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="comparison"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <TradeBatchComparisonView
+                    trades={trades}
+                  />
+                </div>
+              }
+            />
+            <Route path="tags" element={
+              <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                <TagsManagementView />
               </div>
-            }
-          />
-          <Route path="tags" element={
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-              <TagsManagementView />
-            </div>
-          } />
-          <Route
-            path="history"
-            element={
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-                <TradeHistoryView
-                  trades={trades}
-                  onToggleTradeForm={handleToggleTradeForm}
-                />
-              </div>
-            }
-          />
-        </Route>
-      </Routes>
+            } />
+            <Route
+              path="history"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <TradeHistoryView
+                    trades={trades}
+                    onToggleTradeForm={handleToggleTradeForm}
+                  />
+                </div>
+              }
+            />
+          </Route>
+        </Routes>
+      </div>
     </div>
   );
 }

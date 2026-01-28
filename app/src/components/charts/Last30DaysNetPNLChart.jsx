@@ -11,113 +11,120 @@ import {
   ReferenceLine,
   Rectangle
 } from 'recharts';
-import { Info } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
-// Custom bar shape with rounded corners that adapts to positive/negative values
+// Custom bar shape with rounded corners
 const RoundedBar = (props) => {
   const { height, y, ...rest } = props;
 
-  // Positive: rounded top corners. Negative: rounded bottom corners with flat top.
   if (height < 0) {
     return (
       <Rectangle
         {...rest}
         y={y + height}
         height={-height}
-        radius={[0, 0, 8, 8]}
+        radius={[0, 0, 4, 4]}
       />
     );
   }
 
-  return <Rectangle {...rest} y={y} height={height} radius={[8, 8, 0, 0]} />;
+  return <Rectangle {...rest} y={y} height={height} radius={[4, 4, 0, 0]} />;
 };
-
-const CustomTooltip = ({ active, payload }) => {
-  const { isDark } = useTheme();
-  
-  if (!active || !payload || payload.length === 0) {
-    return null;
-  }
-
-  const dataPoint = payload[0].payload;
-  const value = Number(payload[0].value || 0);
-  const valueColor = value >= 0 ? '#10B981' : '#EF4444';
-
-  return (
-    <div style={{ 
-      backgroundColor: isDark ? '#1F2937' : '#FFFFFF', 
-      border: isDark ? '1px solid #374151' : '1px solid #E5E7EB', 
-      borderRadius: 8, 
-      color: isDark ? '#F3F4F6' : '#111827', 
-      padding: '8px 10px' 
-    }}>
-      <div style={{ fontSize: 12, color: isDark ? '#D1D5DB' : '#6B7280', marginBottom: 4 }}>{dataPoint.monthFull}</div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-        <span style={{ color: isDark ? '#9CA3AF' : '#6B7280', fontSize: 12 }}>Net P&L</span>
-        <span style={{ color: valueColor, fontWeight: 600, fontSize: 12 }}>
-          {`$${value.toLocaleString()}`}
-        </span>
-      </div>
-    </div>
-  );
-};
-
 
 const Last30DaysNetPNLChart = ({ data }) => {
   const { isDark } = useTheme();
   
+  // Theme-aware colors
+  const colors = {
+    win: isDark ? '#C9A962' : '#6B8E23',
+    loss: isDark ? '#8B4049' : '#A04050',
+    grid: isDark ? '#2A2A2E' : '#E5E0D8',
+    axis: isDark ? '#5A5A5D' : '#8B8B8E',
+    reference: isDark ? '#3A3A3E' : '#D4CFC5',
+    tooltipBg: isDark ? '#1A1A1D' : '#FFFFFF',
+    tooltipBorder: isDark ? '#2A2A2E' : '#E5E0D8',
+    cursorFill: isDark ? 'rgba(201, 169, 98, 0.05)' : 'rgba(158, 124, 60, 0.05)',
+  };
+
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload }) => {
+    if (!active || !payload || payload.length === 0) {
+      return null;
+    }
+
+    const dataPoint = payload[0].payload;
+    const value = Number(payload[0].value || 0);
+    const isProfit = value >= 0;
+
+    return (
+      <div 
+        className="rounded-lg px-4 py-3 shadow-luxe-md"
+        style={{ 
+          backgroundColor: colors.tooltipBg, 
+          border: `1px solid ${colors.tooltipBorder}` 
+        }}
+      >
+        <p className="font-mono text-xs mb-1" style={{ color: colors.axis }}>{dataPoint.dateFull || dataPoint.dateLabel}</p>
+        <p className="font-display text-lg" style={{ color: isProfit ? colors.win : colors.loss }}>
+          {isProfit ? '+' : ''}${value.toLocaleString()}
+        </p>
+      </div>
+    );
+  };
+
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">Last 30 Days Net P&amp;L</h3>
-          <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+      <div className="card-luxe p-6">
+        <div className="mb-6">
+          <h3 className="font-display text-xl text-text-primary">30-Day P&L</h3>
+          <p className="font-mono text-xs text-text-muted mt-1">Daily performance over last 30 days</p>
         </div>
-        <div className="flex items-center justify-center h-[300px] text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-center h-[250px] text-text-muted font-mono text-sm">
           No data available
         </div>
       </div>
     );
   }
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
   return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">Last 30 Days Net P&amp;L</h3>
-        <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+    <div className="card-luxe p-6">
+      <div className="mb-6">
+        <h3 className="font-display text-xl text-text-primary">30-Day P&L</h3>
+        <p className="font-mono text-xs text-text-muted mt-1">Daily performance over last 30 days</p>
       </div>
       <div className="w-full">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} margin={{ top: 16, right: 16, left: 0, bottom: 30 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#374151" : "#E5E7EB"} />
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 30 }}>
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke={colors.grid} 
+              vertical={false}
+            />
             <XAxis
               dataKey="dateLabel"
-              stroke={isDark ? "#9CA3AF" : "#6B7280"}
-              tick={{ fontSize: 10, fill: isDark ? '#9CA3AF' : '#6B7280' }}
+              stroke={colors.axis}
+              tick={{ fontSize: 9, fill: colors.axis, fontFamily: 'IBM Plex Mono' }}
               angle={-45}
               textAnchor="end"
-              height={40}
+              height={35}
+              axisLine={{ stroke: colors.grid }}
+              tickLine={{ stroke: colors.grid }}
             />
             <YAxis
-              stroke={isDark ? "#9CA3AF" : "#6B7280"}
-              tick={{ fontSize: 12, fill: isDark ? '#9CA3AF' : '#6B7280' }}
-              tickFormatter={(value) => formatCurrency(value)}
+              stroke={colors.axis}
+              tick={{ fontSize: 10, fill: colors.axis, fontFamily: 'IBM Plex Mono' }}
+              tickFormatter={(value) => `$${value.toLocaleString()}`}
+              axisLine={{ stroke: colors.grid }}
+              tickLine={{ stroke: colors.grid }}
+              width={60}
             />
-            <ReferenceLine y={0} stroke={isDark ? "#4B5563" : "#9CA3AF"} />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="netPNL" barSize={26} shape={<RoundedBar />}>
+            <ReferenceLine y={0} stroke={colors.reference} strokeDasharray="4 4" />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: colors.cursorFill }} />
+            <Bar dataKey="netPNL" barSize={14} shape={<RoundedBar />}>
               {data.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.netPNL >= 0 ? '#10B981' : '#EF4444'}
+                  fill={entry.netPNL >= 0 ? colors.win : colors.loss}
                 />
               ))}
             </Bar>

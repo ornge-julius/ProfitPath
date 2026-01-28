@@ -46,22 +46,18 @@ const TradeDetailPage = ({
 
   if (!trade) {
     return (
-      <div className="text-center py-12">
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trade Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            We couldn't find details for the requested trade. It may have been deleted or belongs to a different account.
-          </p>
-          <div>
-            <button
-              type="button"
-              onClick={handleBack}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <h1 className="font-display text-display-md text-text-primary mb-4">Trade Not Found</h1>
+        <p className="font-mono text-sm text-text-muted mb-8 max-w-md">
+          The requested trade could not be found. It may have been deleted or belongs to a different account.
+        </p>
+        <button
+          type="button"
+          onClick={handleBack}
+          className="btn-primary"
+        >
+          Go Back
+        </button>
       </div>
     );
   }
@@ -81,4 +77,3 @@ const TradeDetailPage = ({
 };
 
 export default TradeDetailPage;
-

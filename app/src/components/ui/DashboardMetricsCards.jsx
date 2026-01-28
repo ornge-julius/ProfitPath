@@ -20,7 +20,7 @@ const DashboardMetricsCards = ({ metrics, currentBalance, balanceTrendData }) =>
   } = metrics;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
       <WinRateCard
         winRate={winRate}
         winningTrades={winningTrades}
@@ -34,7 +34,7 @@ const DashboardMetricsCards = ({ metrics, currentBalance, balanceTrendData }) =>
       />
 
       <AvgWLCard
-        title="Avg W/L $"
+        title="Risk/Reward"
         avgWin={avgWin}
         avgLoss={avgLoss}
       />

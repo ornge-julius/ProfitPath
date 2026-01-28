@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 
 const ConfirmModal = ({ 
   isOpen, 
@@ -9,11 +9,10 @@ const ConfirmModal = ({
   message, 
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  confirmButtonColor = 'bg-red-600 hover:bg-red-700'
+  confirmButtonColor = 'bg-loss hover:bg-loss/80'
 }) => {
   if (!isOpen) return null;
 
-  // Handle outside click to close
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -24,39 +23,46 @@ const ConfirmModal = ({
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        className="fixed inset-0 modal-overlay z-40"
         onClick={handleBackdropClick}
       />
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl max-w-md w-full">
+        <div className="modal-content max-w-md w-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-200">{title}</h3>
+          <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-loss-bg flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-loss" />
+              </div>
+              <h3 className="font-display text-xl text-text-primary">{title}</h3>
+            </div>
             <button 
               onClick={onClose}
-              className="text-gray-400 hover:text-white transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4 text-text-muted" />
             </button>
           </div>
           
           {/* Content */}
           <div className="p-6">
-            <p className="text-gray-300 mb-6">{message}</p>
+            <p className="font-mono text-sm text-text-secondary mb-6 leading-relaxed">
+              {message}
+            </p>
             
             {/* Buttons */}
             <div className="flex gap-3 justify-end">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-medium transition-colors"
+                className="btn-secondary"
               >
                 {cancelText}
               </button>
               <button
                 onClick={onConfirm}
-                className={`px-4 py-2 ${confirmButtonColor} rounded-lg font-medium transition-colors`}
+                className={`px-6 py-3 ${confirmButtonColor} rounded-lg font-mono text-sm font-medium text-text-primary transition-all`}
               >
                 {confirmText}
               </button>
@@ -69,4 +75,3 @@ const ConfirmModal = ({
 };
 
 export default ConfirmModal;
-

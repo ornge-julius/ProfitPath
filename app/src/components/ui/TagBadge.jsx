@@ -2,9 +2,9 @@ import React from 'react';
 import { X } from 'lucide-react';
 
 const sizeClasses = {
-  small: 'text-xs px-2 py-1',
-  default: 'text-sm px-2.5 py-1.5',
-  large: 'text-base px-3 py-2'
+  small: 'text-[10px] px-2 py-0.5',
+  default: 'text-xs px-2.5 py-1',
+  large: 'text-sm px-3 py-1.5'
 };
 
 const TagBadge = ({ tag, onRemove, showRemove = false, size = 'default', className = '' }) => {
@@ -12,26 +12,27 @@ const TagBadge = ({ tag, onRemove, showRemove = false, size = 'default', classNa
     return null;
   }
 
-  const tagColor = tag.color || '#3B82F6';
+  const tagColor = tag.color || '#C9A962';
   const appliedSize = sizeClasses[size] || sizeClasses.default;
-  const removableClasses = showRemove
-    ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
-    : '';
-
-  const styleProps = showRemove
-    ? {}
-    : { backgroundColor: `${tagColor}20`, color: tagColor };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-medium transition-colors ${appliedSize} ${removableClasses} ${className}`.trim()}
-      style={styleProps}
+      className={`inline-flex items-center gap-1.5 rounded font-mono font-medium border transition-all ${appliedSize} ${
+        showRemove 
+          ? 'bg-bg-elevated border-border hover:border-border-accent cursor-pointer text-text-secondary' 
+          : 'border-transparent'
+      } ${className}`.trim()}
+      style={!showRemove ? { 
+        backgroundColor: `${tagColor}15`, 
+        color: tagColor,
+        borderColor: `${tagColor}30`
+      } : {}}
     >
       <span
-        className="w-2 h-2 rounded-full"
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0"
         style={{ backgroundColor: tagColor }}
       />
-      <span className="truncate max-w-[6rem]">{tag.name}</span>
+      <span className="truncate max-w-[5rem]">{tag.name}</span>
       {showRemove && onRemove && (
         <button
           type="button"
@@ -39,10 +40,10 @@ const TagBadge = ({ tag, onRemove, showRemove = false, size = 'default', classNa
             event.stopPropagation();
             onRemove(tag.id);
           }}
-          className="ml-1 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-full p-0.5 transition-colors"
+          className="ml-0.5 hover:bg-bg-card rounded p-0.5 transition-colors"
           aria-label={`Remove tag ${tag.name}`}
         >
-          <X className="h-3 w-3" />
+          <X className="h-2.5 w-2.5" />
         </button>
       )}
     </span>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Edit, ExternalLink, Target, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, TrendingUp, TrendingDown } from 'lucide-react';
 import { calculateTradeDuration, calculateReturnPercentage, getResultText, isWin, getTradeTypeText, formatDate } from '../../utils/calculations';
 import TradeForm from '../forms/TradeForm';
 import TagBadge from './TagBadge';
@@ -20,36 +20,37 @@ const TradeDetailView = ({
   const returnPercentage = calculateReturnPercentage(trade.entry_price, trade.exit_price);
   const formattedEntryDate = formatDate(trade.entry_date);
   const formattedExitDate = formatDate(trade.exit_date);
+  const isProfit = trade.profit >= 0;
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-10">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors mb-4"
+          className="flex items-center gap-2 font-mono text-sm text-gold hover:text-gold-light transition-colors mb-6"
         >
-          <ArrowLeft className="h-5 w-5" />
-          Back to Trade List
+          <ArrowLeft className="h-4 w-4" />
+          Back
         </button>
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              Trade Details
+            <h1 className="font-display text-display-lg text-text-primary mb-2">
+              {trade.symbol}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">Complete information for {trade.symbol} trade</p>
+            <p className="font-mono text-sm text-text-muted">
+              {trade.option || 'Stock Trade'} · {formattedEntryDate}
+            </p>
           </div>
-          <div className="flex gap-4">
-            {!isEditing && isAuthenticated && (
-              <button
-                onClick={() => onEdit(trade)}
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-white"
-              >
-                <Edit className="h-4 w-4" />
-                Edit Trade
-              </button>
-            )}
-          </div>
+          {!isEditing && isAuthenticated && (
+            <button
+              onClick={() => onEdit(trade)}
+              className="btn-secondary flex items-center gap-2"
+            >
+              <Edit className="h-4 w-4" />
+              Edit
+            </button>
+          )}
         </div>
       </div>
 
@@ -66,98 +67,102 @@ const TradeDetailView = ({
       )}
 
       {/* Trade Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Symbol</h3>
-            <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-          </div>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{trade.symbol}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">{trade.option || 'Stock Trade'}</p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Profit</h3>
-            {trade.profit >= 0 ? 
-              <span className="text-emerald-400">📈</span> : 
-              <span className="text-red-400">📉</span>
-            }
-          </div>
-          <p className={`text-2xl font-bold ${trade.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-            ${trade.profit.toLocaleString()}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="card-luxe p-5">
+          <span className="stat-label mb-2 block">P&L</span>
+          <p className={`font-display text-2xl ${isProfit ? 'text-gold' : 'text-loss'}`}>
+            {isProfit ? '+' : ''}${trade.profit.toLocaleString()}
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            {trade.result !== undefined && (
-              <span className={isWin(trade.result) ? 'text-emerald-400' : 'text-red-400'}>
-                {getResultText(trade.result)}
-              </span>
+          <div className="flex items-center gap-1 mt-2">
+            {isProfit ? (
+              <TrendingUp className="w-3 h-3 text-gold" />
+            ) : (
+              <TrendingDown className="w-3 h-3 text-loss" />
             )}
-          </p>
+            <span className={`font-mono text-xs ${isProfit ? 'text-gold' : 'text-loss'}`}>
+              {returnPercentage.toFixed(2)}%
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Position</h3>
-            <Target className="h-5 w-5 text-purple-400" />
-          </div>
-          <p className="text-2xl font-bold text-purple-400">{getTradeTypeText(trade.position_type)}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">{trade.quantity} contracts</p>
+        <div className="card-luxe p-5">
+          <span className="stat-label mb-2 block">Position</span>
+          <p className="font-display text-2xl text-text-primary">
+            {getTradeTypeText(trade.position_type)}
+          </p>
+          <span className="font-mono text-xs text-text-muted mt-2 block">
+            {trade.quantity} contracts
+          </span>
         </div>
 
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Duration</h3>
-            <Calendar className="h-5 w-5 text-yellow-400" />
-          </div>
-          <p className="text-2xl font-bold text-yellow-400">{duration}d</p>
-          <p className="text-xs text-gray-500 dark:text-gray-500">
-            {formattedEntryDate} to {formattedExitDate}
+        <div className="card-luxe p-5">
+          <span className="stat-label mb-2 block">Duration</span>
+          <p className="font-display text-2xl text-text-primary">
+            {duration}<span className="text-text-muted text-lg">d</span>
           </p>
+          <span className="font-mono text-xs text-text-muted mt-2 block">
+            Hold time
+          </span>
+        </div>
+
+        <div className="card-luxe p-5">
+          <span className="stat-label mb-2 block">Result</span>
+          {trade.result !== undefined ? (
+            <>
+              <p className={`font-display text-2xl ${isWin(trade.result) ? 'text-gold' : 'text-loss'}`}>
+                {getResultText(trade.result)}
+              </p>
+              <span className={`badge mt-2 ${isWin(trade.result) ? 'badge-win' : 'badge-loss'}`}>
+                {isWin(trade.result) ? 'Profitable' : 'Loss'}
+              </span>
+            </>
+          ) : (
+            <p className="font-mono text-sm text-text-muted">Not set</p>
+          )}
         </div>
       </div>
 
       {/* Detailed Information */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Trade Details */}
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-200">Trade Information</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Entry Price</span>
-              <span className="text-gray-900 dark:text-white font-medium">${trade.entry_price.toFixed(2)}</span>
+        <div className="card-luxe p-6">
+          <h3 className="font-display text-xl text-text-primary mb-6">Trade Details</h3>
+          <div className="space-y-0">
+            <div className="flex justify-between py-3 border-b border-border-subtle">
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Entry Price</span>
+              <span className="font-mono text-sm text-text-primary">${trade.entry_price.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Exit Price</span>
-              <span className="text-gray-900 dark:text-white font-medium">${trade.exit_price.toFixed(2)}</span>
+            <div className="flex justify-between py-3 border-b border-border-subtle">
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Exit Price</span>
+              <span className="font-mono text-sm text-text-primary">${trade.exit_price.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Quantity</span>
-              <span className="text-gray-900 dark:text-white font-medium">{trade.quantity}</span>
+            <div className="flex justify-between py-3 border-b border-border-subtle">
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Quantity</span>
+              <span className="font-mono text-sm text-text-primary">{trade.quantity}</span>
             </div>
-            <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Entry Date</span>
-              <span className="text-gray-900 dark:text-white font-medium">{formattedEntryDate}</span>
+            <div className="flex justify-between py-3 border-b border-border-subtle">
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Entry Date</span>
+              <span className="font-mono text-sm text-text-primary">{formattedEntryDate}</span>
             </div>
-            <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Exit Date</span>
-              <span className="text-gray-900 dark:text-white font-medium">{formattedExitDate}</span>
+            <div className="flex justify-between py-3 border-b border-border-subtle">
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Exit Date</span>
+              <span className="font-mono text-sm text-text-primary">{formattedExitDate}</span>
             </div>
             {trade.source && (
-              <div className="flex justify-between py-3 border-b border-gray-200 dark:border-gray-700">
-                <span className="text-gray-600 dark:text-gray-400">Source</span>
-                <span className="text-purple-600 dark:text-purple-300 font-medium">{trade.source}</span>
+              <div className="flex justify-between py-3 border-b border-border-subtle">
+                <span className="font-mono text-xs text-text-muted uppercase tracking-wide">Source</span>
+                <span className="font-mono text-sm text-gold">{trade.source}</span>
               </div>
             )}
             <div className="py-3">
-              <span className="text-gray-600 dark:text-gray-400 block mb-2">Tags</span>
+              <span className="font-mono text-xs text-text-muted uppercase tracking-wide block mb-3">Tags</span>
               <div className="flex flex-wrap gap-2">
                 {trade.tags && trade.tags.length > 0 ? (
                   trade.tags.map((tag) => (
                     <TagBadge key={tag.id} tag={tag} />
                   ))
                 ) : (
-                  <span className="text-sm text-gray-500 dark:text-gray-500">No tags assigned</span>
+                  <span className="font-mono text-xs text-text-muted">No tags assigned</span>
                 )}
               </div>
             </div>
@@ -165,48 +170,35 @@ const TradeDetailView = ({
         </div>
 
         {/* Analysis Section */}
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-200">Trade Analysis</h3>
+        <div className="card-luxe p-6">
+          <h3 className="font-display text-xl text-text-primary mb-6">Analysis</h3>
           <div className="space-y-6">
             {trade.reasoning && (
               <div>
-                <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-                  💡 Reason for Entry
+                <h4 className="font-mono text-xs text-text-muted uppercase tracking-wide mb-3">
+                  Entry Reason
                 </h4>
-                <p className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">{trade.reasoning}</p>
-              </div>
-            )}
-            
-            {trade.result !== undefined && (
-              <div>
-                <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-                  📊 Trade Outcome
-                </h4>
-                <div className={`inline-flex px-3 py-2 rounded-lg font-medium ${
-                  isWin(trade.result)
-                    ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700' 
-                    : 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700'
-                }`}>
-                  {getResultText(trade.result)}
+                <div className="bg-bg-surface rounded-lg p-4 border border-border-subtle">
+                  <p className="font-mono text-sm text-text-secondary leading-relaxed">{trade.reasoning}</p>
                 </div>
               </div>
             )}
 
             <div>
-              <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-2">
-                📈 Performance Metrics
+              <h4 className="font-mono text-xs text-text-muted uppercase tracking-wide mb-3">
+                Performance
               </h4>
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 space-y-2">
+              <div className="bg-bg-surface rounded-lg p-4 border border-border-subtle space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-700 dark:text-gray-300">Return %:</span>
-                  <span className={`font-medium ${returnPercentage >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    {returnPercentage.toFixed(2)}%
+                  <span className="font-mono text-xs text-text-muted">Return</span>
+                  <span className={`font-mono text-sm font-medium ${returnPercentage >= 0 ? 'text-gold' : 'text-loss'}`}>
+                    {returnPercentage >= 0 ? '+' : ''}{returnPercentage.toFixed(2)}%
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-700 dark:text-gray-300">Total Return:</span>
-                  <span className={`font-medium ${trade.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                    ${trade.profit.toLocaleString()}
+                  <span className="font-mono text-xs text-text-muted">Net P&L</span>
+                  <span className={`font-mono text-sm font-medium ${trade.profit >= 0 ? 'text-gold' : 'text-loss'}`}>
+                    {trade.profit >= 0 ? '+' : ''}${trade.profit.toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -217,12 +209,12 @@ const TradeDetailView = ({
 
       {/* Extended Notes Section */}
       {trade.notes && (
-        <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl p-6">
-          <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-200 flex items-center gap-2">
-            📝 Extended Notes
-          </h3>
-          <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-6">
-            <p className="text-gray-900 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{trade.notes}</p>
+        <div className="card-luxe p-6">
+          <h3 className="font-display text-xl text-text-primary mb-4">Notes</h3>
+          <div className="bg-bg-surface rounded-lg p-6 border border-border-subtle">
+            <p className="font-mono text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
+              {trade.notes}
+            </p>
           </div>
         </div>
       )}
