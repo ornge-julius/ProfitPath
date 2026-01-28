@@ -1,7 +1,7 @@
 <img width="800" height="800" alt="FullLogo_Transparent" src="https://github.com/user-attachments/assets/9c636134-6144-411d-a2d2-ee71d99d4757" /> 
 
 # ProfitPath
-This project combines my two passions, coding and trading. I built this application to better understand my trading habits and strategies. The purpose of this app is to help tracking my path to profitability.
+This project brings together my passions for coding and trading to give me a clearer, data‑driven view of my performance and decision‑making.  It helps me analyze my trading habits and strategies so I can systematically track and refine my path to consistent profitability.
 ## Features
 
 ### Core Trading Features
