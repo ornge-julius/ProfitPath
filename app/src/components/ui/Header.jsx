@@ -52,7 +52,7 @@ const Header = ({
   };
 
   return (
-    <header className={`fixed left-0 right-0 z-30 transition-[top] duration-200 ${isDemoMode ? 'top-20 sm:top-11' : 'top-0'}`}>
+    <header className={`fixed left-0 right-0 z-30 transition-[top] duration-200 ${isDemoMode ? 'top-14 sm:top-[38px]' : 'top-0'}`}>
       {/* Glass background with subtle border */}
       <div className="absolute inset-0 bg-bg-primary/90 backdrop-blur-xl border-b border-border-subtle" />
       
