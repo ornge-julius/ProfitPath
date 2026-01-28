@@ -3,7 +3,6 @@ import { ArrowLeft, Edit, TrendingUp, TrendingDown } from 'lucide-react';
 import { calculateTradeDuration, calculateReturnPercentage, getResultText, isWin, getTradeTypeText, formatDate } from '../../utils/calculations';
 import TradeForm from '../forms/TradeForm';
 import TagBadge from './TagBadge';
-import { useTheme } from '../../context/ThemeContext';
 
 const TradeDetailView = ({
   trade,
