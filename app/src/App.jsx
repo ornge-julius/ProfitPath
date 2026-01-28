@@ -320,22 +320,22 @@ function AppContent() {
 
       {/* Loading State */}
       {authLoading ? (
-        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-36 sm:pt-[118px]' : 'pt-24'}`}>
           <div className="spinner mb-4"></div>
           <p className="font-mono text-sm text-text-secondary tracking-wide">Loading authentication...</p>
         </div>
       ) : isAccountLoading ? (
-        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-36 sm:pt-[118px]' : 'pt-24'}`}>
           <div className="spinner mb-4"></div>
           <p className="font-mono text-sm text-text-secondary tracking-wide">Loading account data...</p>
         </div>
       ) : !selectedAccountId ? (
-        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}`}>
+        <div className={`flex flex-col items-center justify-center min-h-[60vh] ${isDemoMode ? 'pt-36 sm:pt-[118px]' : 'pt-24'}`}>
           <p className="font-display text-2xl text-text-primary mb-2">No Account Selected</p>
           <p className="font-mono text-sm text-text-muted">Select an account to view your trading data.</p>
         </div>
       ) : (
-          <div className={isDemoMode ? 'pt-52 sm:pt-40' : 'pt-24'}>
+          <div className={isDemoMode ? 'pt-40 sm:pt-32' : 'pt-24'}>
             <Outlet />
           </div>
         )}
@@ -362,7 +362,7 @@ function AppContent() {
             element={
               <>
                 <DemoModeBanner onSignIn={handleSignIn} />
-                <div className={`max-w-6xl mx-auto px-6 sm:px-8 pb-24 ${isDemoMode ? 'pt-28 sm:pt-16' : 'pt-8'}`}>
+                <div className={`max-w-6xl mx-auto px-6 sm:px-8 pb-24 ${isDemoMode ? 'pt-20 sm:pt-12' : 'pt-8'}`}>
                   <TradeDetailPage
                     trades={trades}
                     editingTrade={editingTrade}
