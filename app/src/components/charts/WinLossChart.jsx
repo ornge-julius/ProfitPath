@@ -1,43 +1,92 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
-const WinLossChart = ({ data, winningTrades, losingTrades }) => {
+const clampPercentage = (value) => {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return 0;
+  }
+  if (value < 0) return 0;
+  if (value > 100) return 100;
+  return value;
+};
+
+const WinLossChart = ({ data, winningTrades = 0, losingTrades = 0, winRate }) => {
+  const { isDark } = useTheme();
+  
+  // Theme-aware colors (same as WinRateCard)
+  const colors = {
+    win: isDark ? '#C9A962' : '#6B8E23',
+    loss: isDark ? '#32323A' : '#E5E0D8',
+  };
+
+  // Calculate win rate from props or data
+  const totalTrades = winningTrades + losingTrades;
+  const calculatedWinRate = winRate ?? (totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0);
+  const validWinRate = clampPercentage(calculatedWinRate);
+  const lossRate = 100 - validWinRate;
+
+  const wins = Number.isFinite(winningTrades) && winningTrades > 0 ? Math.round(winningTrades) : 0;
+  const losses = Number.isFinite(losingTrades) && losingTrades > 0 ? Math.round(losingTrades) : 0;
+
+  const chartData = useMemo(() => {
+    const baseData = [
+      { name: 'Wins', value: validWinRate, color: colors.win },
+      { name: 'Losses', value: lossRate, color: colors.loss },
+    ];
+
+    if (validWinRate === 0 && lossRate === 0) {
+      return [
+        { name: 'Wins', value: 0, color: colors.win },
+        { name: 'Losses', value: 100, color: colors.loss },
+      ];
+    }
+
+    return baseData;
+  }, [lossRate, validWinRate, colors.win, colors.loss]);
+
   return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-xl p-6 w-full min-w-0 overflow-hidden">
-      <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-200">Win/Loss Ratio</h3>
-      <div className="w-full min-w-0">
-        <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
-          <Pie
-            data={data}
-            cx="50%"
-            cy="50%"
-            startAngle={-90}
-            endAngle={270}
-            innerRadius={0}
-            outerRadius={100}
-            dataKey="value"
-            stroke="#FFFFFF"
-            strokeWidth={2}
-            strokeOpacity={0.25}
-            labelLine={false}
-
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} stroke="#FFFFFF" strokeWidth={1} strokeOpacity={0.25} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="w-full min-w-0">
+      {/* Chart */}
+      <div className="h-32 -mx-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              startAngle={90}
+              endAngle={-270}
+              innerRadius={32}
+              outerRadius={52}
+              dataKey="value"
+              stroke="transparent"
+              strokeWidth={0}
+            >
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`win-loss-segment-${entry.name}-${index}`} 
+                  fill={entry.color}
+                />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
       </div>
-      <div className="flex justify-center gap-6 mt-4">
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-6 mt-3">
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-3 w-3 rounded-full" style={{ backgroundColor: '#10B981' }} />
-          <span className="text-sm text-gray-700 dark:text-gray-400">Wins ({winningTrades})</span>
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.win }} />
+          <span className="font-mono text-xs text-text-secondary">
+            {wins} <span className="text-text-muted">W</span>
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-3 w-3 rounded-full" style={{ backgroundColor: '#111827' }} />
-          <span className="text-sm text-gray-700 dark:text-gray-400">Losses ({losingTrades})</span>
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.loss }} />
+          <span className="font-mono text-xs text-text-secondary">
+            {losses} <span className="text-text-muted">L</span>
+          </span>
         </div>
       </div>
     </div>

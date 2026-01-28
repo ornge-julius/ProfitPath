@@ -47,21 +47,26 @@ const AccountEditForm = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-white">Edit Account</h2>
+    <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
+      <div className="modal-content w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+          <div>
+            <h2 className="font-display text-xl text-text-primary">Edit Account</h2>
+            <p className="font-mono text-xs text-text-muted mt-1">Update account details</p>
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 text-text-muted" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="name" className="label-luxe">
               Account Name
             </label>
             <input
@@ -70,14 +75,14 @@ const AccountEditForm = ({
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="input-luxe"
               placeholder="Enter account name"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="startingBalance" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="startingBalance" className="label-luxe">
               Starting Balance
             </label>
             <input
@@ -86,7 +91,7 @@ const AccountEditForm = ({
               name="startingBalance"
               value={formData.startingBalance}
               onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="input-luxe"
               placeholder="0.00"
               step="0.01"
               min="0"
@@ -95,7 +100,7 @@ const AccountEditForm = ({
           </div>
 
           <div>
-            <label htmlFor="currentBalance" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="currentBalance" className="label-luxe">
               Current Balance
             </label>
             <input
@@ -104,7 +109,7 @@ const AccountEditForm = ({
               name="currentBalance"
               value={formData.currentBalance}
               onChange={handleChange}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="input-luxe"
               placeholder="0.00"
               step="0.01"
               min="0"
@@ -112,17 +117,17 @@ const AccountEditForm = ({
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="btn-primary flex-1"
             >
               Save Changes
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              className="btn-secondary flex-1"
             >
               Cancel
             </button>

@@ -1,11 +1,8 @@
 import React, { useEffect, useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Fab } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
 import { useFilteredTrades } from '../../hooks/useFilteredTrades';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
 import { useTagFilter } from '../../context/TagFilterContext';
 import TradeHistoryTable from '../tables/TradeHistoryTable';
 
@@ -13,7 +10,6 @@ const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { isDark } = useTheme();
   const { setSelectedTags, setMode, FILTER_MODES } = useTagFilter();
   const filteredTrades = useFilteredTrades(trades);
 
@@ -43,46 +39,43 @@ const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
   }, [location.state]);
 
   return (
-    <div className="space-y-6 relative h-full flex flex-col">
-      <div className="flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-3">
+    <div className="space-y-8 relative h-full flex flex-col">
+      {/* Page Header */}
+      <div className="flex items-start justify-between pt-4 flex-shrink-0">
+        <div className="flex items-center gap-4">
           {fromTagsPage && (
             <button
               type="button"
               onClick={() => navigate('/tags')}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800/70 dark:text-white dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg transition-colors"
+              className="h-10 w-10 flex items-center justify-center rounded-lg border border-border hover:border-border-accent hover:bg-bg-elevated transition-all"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Tags
+              <ArrowLeft className="h-4 w-4 text-text-secondary" />
             </button>
           )}
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trade History</h1>
+          <div>
+            <h1 className="font-display text-display-md text-text-primary mb-2">Trade History</h1>
+            <p className="font-mono text-sm text-text-muted">
+              Complete record of all your trades
+            </p>
+          </div>
         </div>
         {isAuthenticated && (
-          <Fab
-            aria-label="add trade"
+          <button
             onClick={onToggleTradeForm}
-            sx={{
-              backgroundColor: '#10B981',
-              border: isDark ? '1px solid #000000' : 'none',
-              color: isDark ? '#000000' : '#FFFFFF',
-              '&:hover': {
-                backgroundColor: '#059669',
-              },
-              zIndex: 10,
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            }}
+            className="btn-primary flex items-center gap-2"
           >
-            <AddIcon />
-          </Fab>
+            <Plus className="w-4 h-4" />
+            New Trade
+          </button>
         )}
         {!isAuthenticated && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="font-mono text-xs text-text-muted">
             Sign in to add trades
           </p>
         )}
       </div>
 
+      {/* Table */}
       <div className="flex-1 min-h-0">
         <TradeHistoryTable trades={filteredTrades} />
       </div>
@@ -91,4 +84,3 @@ const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
 };
 
 export default TradeHistoryView;
-

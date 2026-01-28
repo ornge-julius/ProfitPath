@@ -28,7 +28,7 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
-      className={`relative inline-flex items-center justify-center rounded-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 border-2 shadow-md ${className}`}
+      className={`relative inline-flex items-center justify-center rounded-xl bg-bg-surface border border-border hover:border-border-accent transition-colors ${className}`}
       tabIndex={0}
       role="button"
       aria-haspopup="true"
@@ -56,8 +56,8 @@ function DockLabel({ children, className = '', ...rest }) {
           initial={{ opacity: 0, y: 0 }}
           animate={{ opacity: 1, y: -10 }}
           exit={{ opacity: 0, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className={`${className} absolute -top-6 left-1/2 w-fit whitespace-pre rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-2 py-0.5 text-xs text-gray-900 dark:text-white`}
+          transition={{ duration: 0.15, ease: 'easeOut' }}
+          className={`${className} absolute -top-8 left-1/2 w-fit whitespace-pre rounded-md bg-bg-card border border-border px-2.5 py-1 font-mono text-xs text-text-primary shadow-luxe-md`}
           role="tooltip"
           style={{ x: '-50%' }}
         >
@@ -76,11 +76,11 @@ export default function Dock({
   items,
   className = '',
   spring = { mass: 0.1, stiffness: 150, damping: 12 },
-  magnification = 70,
-  distance = 200,
+  magnification = 64,
+  distance = 180,
   panelHeight = 64,
   dockHeight = 256,
-  baseItemSize = 50
+  baseItemSize = 48
 }) {
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
@@ -103,7 +103,7 @@ export default function Dock({
           isHovered.set(0);
           mouseX.set(Infinity);
         }}
-        className={`${className} absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-end w-fit gap-2 sm:gap-4 rounded-2xl border-gray-200 dark:border-gray-800 border-2 pb-2 px-2 sm:px-4 min-w-fit max-w-[calc(100vw-1rem)]`}
+        className={`${className} absolute bottom-3 left-1/2 transform -translate-x-1/2 flex items-end w-fit gap-2 sm:gap-3 rounded-2xl pb-2 px-3 sm:px-4 min-w-fit max-w-[calc(100vw-1rem)]`}
         style={{ height: panelHeight }}
         role="toolbar"
         aria-label="Application dock"
@@ -127,4 +127,3 @@ export default function Dock({
     </motion.div>
   );
 }
-

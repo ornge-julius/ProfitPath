@@ -37,10 +37,8 @@ const DashboardContent = ({ trades, startingBalance }) => {
   // Calculate the starting balance at the beginning of the filtered period
   const filteredPeriodStartingBalance = useMemo(() => {
     if (!filter || !filter.fromUtc) {
-      // No filter or no start date - use original starting balance
       return startingBalance;
     }
-    // Calculate balance at the start of the filtered period
     return calculateBalanceAtDate(trades, startingBalance, filter.fromUtc);
   }, [trades, startingBalance, filter]);
 
@@ -62,16 +60,30 @@ const DashboardContent = ({ trades, startingBalance }) => {
 
   return (
     <div className="space-y-8">
-      <DashboardMetricsCards metrics={metrics} currentBalance={allTimeMetrics.currentBalance} balanceTrendData={balanceTrendData} />
+      {/* Page Header */}
+      <div className="pt-4">
+        <h1 className="font-display text-display-md text-text-primary mb-2">Dashboard</h1>
+        <p className="font-mono text-sm text-text-muted">Your trading performance at a glance</p>
+      </div>
 
+      {/* Metrics Cards */}
+      <DashboardMetricsCards 
+        metrics={metrics} 
+        currentBalance={allTimeMetrics.currentBalance} 
+        balanceTrendData={balanceTrendData} 
+      />
+
+      {/* Main Chart */}
       <CumulativeNetProfitChart data={cumulativeProfitData} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Secondary Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <MonthlyNetPNLChart data={monthlyNetPNLData} />
         <Last30DaysNetPNLChart data={last30DaysNetPNLData} />
       </div>
 
-      <TradeHistoryTable trades={filteredTrades} title="Trade History" />
+      {/* Trade History */}
+      <TradeHistoryTable trades={filteredTrades} title="Recent Trades" />
     </div>
   );
 };

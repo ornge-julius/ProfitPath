@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Fab } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Plus } from 'lucide-react';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import { useAuth } from '../../hooks/useAuth';
-import { useTheme } from '../../context/ThemeContext';
 import { useTagFilter } from '../../context/TagFilterContext';
 import TagForm from '../forms/TagForm';
 import TagCard from '../ui/TagCard';
@@ -13,7 +11,6 @@ import AnimatedContent from '../ui/animation/AnimatedContent';
 
 const TagsManagementView = () => {
   const { isAuthenticated } = useAuth();
-  const { isDark } = useTheme();
   const { setSelectedTags, setMode, FILTER_MODES } = useTagFilter();
   const navigate = useNavigate();
   const { tags, loading, error, createTag, updateTag, deleteTag } = useTagManagement();
@@ -26,7 +23,6 @@ const TagsManagementView = () => {
       await createTag(tagData);
       setShowCreateForm(false);
     } catch (err) {
-      // Handle error (show notification)
       console.error('Error creating tag:', err);
     }
   };
@@ -36,7 +32,6 @@ const TagsManagementView = () => {
       await updateTag(editingTag.id, tagData);
       setEditingTag(null);
     } catch (err) {
-      // Handle error (show notification)
       console.error('Error updating tag:', err);
     }
   };
@@ -46,7 +41,6 @@ const TagsManagementView = () => {
       await deleteTag(deletingTag.id);
       setDeletingTag(null);
     } catch (err) {
-      // Handle error (show notification)
       console.error('Error deleting tag:', err);
     }
   };
@@ -64,46 +58,41 @@ const TagsManagementView = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-gray-300">Loading tags...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="spinner mb-4"></div>
+        <p className="font-mono text-sm text-text-secondary">Loading tags...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-500">Error loading tags: {error}</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <p className="font-mono text-sm text-loss">Error loading tags: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 relative">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tag Management</h1>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex items-start justify-between pt-4">
+        <div>
+          <h1 className="font-display text-display-md text-text-primary mb-2">Tags</h1>
+          <p className="font-mono text-sm text-text-muted">Organize and categorize your trades</p>
+        </div>
         {isAuthenticated && (
-          <Fab
-            aria-label="add tag"
+          <button
             onClick={() => setShowCreateForm(true)}
-            sx={{
-              backgroundColor: '#10B981',
-              border: isDark ? '1px solid #000000' : 'none',
-              color: isDark ? '#000000' : '#FFFFFF',
-              '&:hover': {
-                backgroundColor: '#059669',
-              },
-              zIndex: 10,
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-            }}
+            className="btn-primary flex items-center gap-2"
           >
-            <AddIcon />
-          </Fab>
+            <Plus className="w-4 h-4" />
+            New Tag
+          </button>
         )}
         {!isAuthenticated && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Sign in to create and edit tags
+          <p className="font-mono text-xs text-text-muted">
+            Sign in to manage tags
           </p>
         )}
       </div>
@@ -126,8 +115,8 @@ const TagsManagementView = () => {
       )}
 
       {tags.length === 0 ? (
-        <div className="text-center py-12 bg-gray-800/50 backdrop-blur border border-gray-700 rounded-xl">
-          <p className="text-gray-400 mb-4">
+        <div className="card-luxe p-12 text-center">
+          <p className="font-mono text-sm text-text-muted mb-2">
             {isAuthenticated 
               ? "No tags yet. Create your first tag to get started!" 
               : "No tags available. Sign in to view your tags."}
@@ -139,9 +128,9 @@ const TagsManagementView = () => {
             <AnimatedContent 
               key={tag.id} 
               ease="back.out"
-              scale={0.8}
-              duration={0.5}
-              delay={index * 0.1}
+              scale={0.95}
+              duration={0.4}
+              delay={index * 0.05}
               distance={0}
               immediate={true}
             >
@@ -166,7 +155,7 @@ const TagsManagementView = () => {
           message={`Are you sure you want to delete "${deletingTag.name}"? ${deletingTag.usage_count > 0 ? `This tag is used by ${deletingTag.usage_count} trade(s). Deleting it will remove the tag from all associated trades.` : ''}`}
           confirmText="Delete Tag"
           cancelText="Cancel"
-          confirmButtonColor="bg-red-600 hover:bg-red-700"
+          confirmButtonColor="bg-loss hover:bg-loss/80"
         />
       )}
     </div>

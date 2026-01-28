@@ -1,15 +1,23 @@
 import React from 'react';
 import { LineChart, Line, ResponsiveContainer, YAxis } from 'recharts';
-import { Info } from 'lucide-react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const CurrentBalanceCard = ({ currentBalance = 0, trendData = [] }) => {
   const [hoverBalance, setHoverBalance] = React.useState(null);
+  const { isDark } = useTheme();
+  
+  // Theme-aware colors
+  const colors = {
+    positive: isDark ? '#C9A962' : '#6B8E23',
+    negative: isDark ? '#8B4049' : '#A04050',
+  };
+  
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(value);
   };
   
@@ -17,23 +25,28 @@ const CurrentBalanceCard = ({ currentBalance = 0, trendData = [] }) => {
     index,
     value: point.balance ?? point.value ?? 0
   }));
-  return (
-    <div className="bg-white dark:bg-gray-800/50 backdrop-blur border border-gray-200 dark:border-gray-700 shadow-lg hover:shadow-xl rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-gray-800/70 transition-all h-full flex flex-col justify-center">
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Current Balance</h3>
-        <Info className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-      </div>
 
-      <p className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+  // Determine trend direction
+  const isPositive = chartData.length >= 2 && 
+    chartData[chartData.length - 1].value >= chartData[0].value;
+
+  return (
+    <div className="card-luxe p-5 h-full flex flex-col">
+      {/* Header */}
+      <span className="stat-label mb-1">Current Balance</span>
+
+      {/* Value */}
+      <p className="font-display text-3xl text-text-primary tracking-tight mb-auto">
         {formatCurrency(hoverBalance ?? currentBalance)}
       </p>
 
+      {/* Sparkline Chart */}
       {chartData.length > 0 && (
-        <div className="mt-4 h-[40px]">
+        <div className="mt-4 h-12 -mx-1">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart 
               data={chartData} 
-              margin={{ top: 4, right: 8, bottom: 4, left: 8 }}
+              margin={{ top: 4, right: 4, bottom: 4, left: 4 }}
               onMouseMove={(state) => {
                 if (state && state.activePayload && state.activePayload.length > 0) {
                   const value = state.activePayload[0].payload?.value;
@@ -44,27 +57,37 @@ const CurrentBalanceCard = ({ currentBalance = 0, trendData = [] }) => {
               }}
               onMouseLeave={() => setHoverBalance(null)}
             >
-              {/** Hidden axis with slight padding to avoid clipping at extremes */}
               <YAxis 
                 hide 
                 domain={[
-                  (dataMin) => dataMin - Math.abs(dataMin) * 0.01 - 1,
-                  (dataMax) => dataMax + Math.abs(dataMax) * 0.01 + 1
+                  (dataMin) => dataMin - Math.abs(dataMin) * 0.02 - 1,
+                  (dataMax) => dataMax + Math.abs(dataMax) * 0.02 + 1
                 ]}
               />
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#10B981"
+                stroke={isPositive ? colors.positive : colors.negative}
                 strokeWidth={1.5}
                 dot={false}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 isAnimationActive={true}
               />
-              {/** Tooltip removed by request */}
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Trend indicator */}
+      {chartData.length >= 2 && (
+        <div className="flex items-center gap-2 mt-2">
+          <span 
+            className="font-mono text-xs"
+            style={{ color: isPositive ? colors.positive : colors.negative }}
+          >
+            {isPositive ? '↑' : '↓'} Trending {isPositive ? 'up' : 'down'}
+          </span>
         </div>
       )}
     </div>

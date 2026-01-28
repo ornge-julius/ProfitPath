@@ -16,7 +16,7 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 640); // sm breakpoint
+      setIsMobile(window.innerWidth < 640);
     };
     
     checkMobile();
@@ -27,7 +27,6 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
   // Helper function to determine if a path is active
   const isActive = (path) => {
     if (path === '/') {
-      // Dashboard is active only on root path, not on detail pages
       return location.pathname === '/' && !location.pathname.startsWith('/detail');
     }
     return location.pathname === path;
@@ -36,67 +35,58 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
   // Navigation items configuration
   const navItems = [
     {
-      icon: <LayoutDashboard className={`w-6 h-6 ${isActive('/') ? 'text-black' : 'text-gray-700 dark:text-gray-300'}`} />,
+      icon: <LayoutDashboard className={`w-5 h-5 ${isActive('/') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'Dashboard',
       onClick: () => navigate('/'),
-      className: isActive('/')
-      ? '!bg-[#10B981] dark:!bg-[#10B981]'
-      : ''
+      className: isActive('/') ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <History className={`w-6 h-6 ${isActive('/history') ? 'text-black' : 'text-gray-700 dark:text-gray-300'}`} />,
-      label: 'Trade History',
+      icon: <History className={`w-5 h-5 ${isActive('/history') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: 'History',
       onClick: () => navigate('/history'),
-      className: isActive('/history')
-        ? '!bg-[#10B981] dark:!bg-[#10B981]'
-        : ''
+      className: isActive('/history') ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <Plus className={`w-6 h-6 ${showTradeForm ? 'text-black' : 'text-gray-700 dark:text-gray-300'}`} />,
-      label: showTradeForm ? 'Hide Trade Form' : 'New Trade',
+      icon: <Plus className={`w-5 h-5 ${showTradeForm ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: showTradeForm ? 'Close' : 'New Trade',
       onClick: onToggleTradeForm,
-      className: showTradeForm
-        ? '!bg-[#10B981] dark:!bg-[#10B981]'
-        : ''
+      className: showTradeForm ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <Tag className={`w-6 h-6 ${isActive('/tags') ? 'text-black' : 'text-gray-700 dark:text-gray-300'}`} />,
+      icon: <Tag className={`w-5 h-5 ${isActive('/tags') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'Tags',
       onClick: () => navigate('/tags'),
-      className: isActive('/tags')
-        ? '!bg-[#10B981] dark:!bg-[#10B981]'
-        : ''
+      className: isActive('/tags') ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <TrendingUpDown className={`w-6 h-6 ${isActive('/comparison') ? 'text-black' : 'text-gray-700 dark:text-gray-300'}`} />,
-      label: 'Batch Comparison',
+      icon: <TrendingUpDown className={`w-5 h-5 ${isActive('/comparison') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: 'Compare',
       onClick: () => navigate('/comparison'),
-      className: isActive('/comparison')
-        ? '!bg-[#10B981] dark:!bg-[#10B981]'
-        : ''
+      className: isActive('/comparison') ? '!bg-gold !border-gold' : ''
     }  
   ];
 
   // Responsive sizing for mobile devices
-  const baseItemSize = isMobile ? 44 : 50;
-  const magnification = isMobile ? 60 : 70;
-  const panelHeight = isMobile ? 60 : 70;
+  const baseItemSize = isMobile ? 42 : 48;
+  const magnification = isMobile ? 56 : 64;
+  const panelHeight = isMobile ? 56 : 64;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center">
-      <Dock
-        items={navItems}
-        className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 shadow-lg"
-        spring={{ mass: 0.1, stiffness: 150, damping: 12 }}
-        magnification={magnification}
-        distance={200}
-        panelHeight={panelHeight}
-        dockHeight={256}
-        baseItemSize={baseItemSize}
-      />
+    <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
+      <div className="pointer-events-auto">
+        <Dock
+          items={navItems}
+          className="bg-bg-card/95 backdrop-blur-xl border border-border shadow-luxe-lg"
+          spring={{ mass: 0.1, stiffness: 150, damping: 12 }}
+          magnification={magnification}
+          distance={180}
+          panelHeight={panelHeight}
+          dockHeight={256}
+          baseItemSize={baseItemSize}
+        />
+      </div>
     </div>
   );
 };
 
 export default BottomNavDock;
-
