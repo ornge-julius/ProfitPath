@@ -4,34 +4,34 @@ overview: Complete the mobile app with authentication, account management, chart
 todos:
   - id: account-state
     content: Create mobile account state management with useAppState hook adaptation
-    status: pending
+    status: completed
   - id: auth-screens
     content: Build Sign In and Sign Up screens for mobile authentication
-    status: pending
+    status: completed
   - id: account-selector
     content: Create account selector component for mobile with create/edit/delete
-    status: pending
+    status: completed
   - id: charts-dashboard
     content: Implement Dashboard charts using react-native-gifted-charts
-    status: pending
+    status: completed
   - id: date-filter-ui
     content: Add date filter picker UI component for mobile
-    status: pending
+    status: completed
   - id: tag-filter-ui
     content: Add tag filter UI component for mobile
-    status: pending
+    status: completed
   - id: trade-detail
     content: Create Trade Detail screen with edit/delete functionality
-    status: pending
+    status: completed
   - id: settings-screen
     content: Build Settings screen with theme toggle and starting balance
-    status: pending
+    status: completed
   - id: ios-polish
     content: Add iOS-specific UX (haptic feedback, native date pickers)
-    status: pending
+    status: completed
   - id: eas-build
     content: Configure Expo EAS Build for iOS TestFlight distribution
-    status: pending
+    status: completed
 isProject: false
 ---
 

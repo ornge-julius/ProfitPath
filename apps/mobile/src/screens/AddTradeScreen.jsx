@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme, colors } from '../context/ThemeContext';
+import { useAppStateContext } from '../context/AppStateContext';
 import { useAuth, useTradeManagement, getTradeTypeNumber, getResultNumber } from '@profitpath/shared';
 
 // Form Input Component
@@ -68,9 +70,7 @@ export default function AddTradeScreen({ navigation }) {
   const themeColors = isDark ? colors.dark : colors.light;
   
   const { user, isLoading: authLoading } = useAuth();
-  
-  // TODO: Get selectedAccountId from app state
-  const selectedAccountId = null;
+  const { selectedAccountId, selectedAccount } = useAppStateContext();
   
   const { addTrade } = useTradeManagement(selectedAccountId);
   
@@ -80,11 +80,23 @@ export default function AddTradeScreen({ navigation }) {
   const [entryPrice, setEntryPrice] = useState('');
   const [exitPrice, setExitPrice] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [entryDate, setEntryDate] = useState(new Date());
+  const [exitDate, setExitDate] = useState(new Date());
   const [result, setResult] = useState(null); // 1 = WIN, 0 = LOSS
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showEntryDatePicker, setShowEntryDatePicker] = useState(false);
+  const [showExitDatePicker, setShowExitDatePicker] = useState(false);
 
   const isLoading = themeLoading || authLoading;
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
 
   const handleSubmit = async () => {
     // Validation
@@ -124,8 +136,8 @@ export default function AddTradeScreen({ navigation }) {
         quantity: quantity,
         result: result,
         notes: notes.trim(),
-        entry_date: new Date().toISOString().split('T')[0],
-        exit_date: new Date().toISOString().split('T')[0],
+        entry_date: entryDate.toISOString().split('T')[0],
+        exit_date: exitDate.toISOString().split('T')[0],
         user_id: user?.id,
       };
 
@@ -140,6 +152,8 @@ export default function AddTradeScreen({ navigation }) {
             setEntryPrice('');
             setExitPrice('');
             setQuantity('');
+            setEntryDate(new Date());
+            setExitDate(new Date());
             setResult(null);
             setNotes('');
             // Navigate to history
@@ -153,6 +167,24 @@ export default function AddTradeScreen({ navigation }) {
       Alert.alert('Error', error.message || 'Failed to add trade');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEntryDateChange = (event, selectedDate) => {
+    if (Platform.OS === 'android') {
+      setShowEntryDatePicker(false);
+    }
+    if (selectedDate) {
+      setEntryDate(selectedDate);
+    }
+  };
+
+  const handleExitDateChange = (event, selectedDate) => {
+    if (Platform.OS === 'android') {
+      setShowExitDatePicker(false);
+    }
+    if (selectedDate) {
+      setExitDate(selectedDate);
     }
   };
 
@@ -191,6 +223,9 @@ export default function AddTradeScreen({ navigation }) {
         {/* Header */}
         <View style={styles.header}>
           <Text style={[styles.title, { color: themeColors.text }]}>Add Trade</Text>
+          <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+            {selectedAccount?.name || 'No account selected'}
+          </Text>
         </View>
 
         {/* Form */}
@@ -250,6 +285,52 @@ export default function AddTradeScreen({ navigation }) {
             keyboardType="number-pad"
             isDark={isDark}
           />
+
+          {/* Entry Date */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Entry Date</Text>
+            <TouchableOpacity
+              style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              onPress={() => setShowEntryDatePicker(true)}
+            >
+              <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+                {formatDate(entryDate)}
+              </Text>
+            </TouchableOpacity>
+            {showEntryDatePicker && (
+              <DateTimePicker
+                value={entryDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleEntryDateChange}
+                maximumDate={new Date()}
+                themeVariant={isDark ? 'dark' : 'light'}
+              />
+            )}
+          </View>
+
+          {/* Exit Date */}
+          <View style={styles.inputContainer}>
+            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Exit Date</Text>
+            <TouchableOpacity
+              style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              onPress={() => setShowExitDatePicker(true)}
+            >
+              <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+                {formatDate(exitDate)}
+              </Text>
+            </TouchableOpacity>
+            {showExitDatePicker && (
+              <DateTimePicker
+                value={exitDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleExitDateChange}
+                maximumDate={new Date()}
+                themeVariant={isDark ? 'dark' : 'light'}
+              />
+            )}
+          </View>
 
           {/* Result */}
           <View style={styles.inputContainer}>
@@ -345,6 +426,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+  },
+  subtitle: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+  },
+  dateButtonText: {
+    fontSize: 16,
   },
   form: {
     gap: 16,

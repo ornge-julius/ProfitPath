@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useSupabase, useAuth } from '@profitpath/shared';
 import { storageJson } from '../utils/storage';
 
 const STORAGE_KEY = 'profitpath_tag_filter';
@@ -9,12 +10,19 @@ export const TAG_FILTER_MODES = {
   OR: 'OR'
 };
 
+// Alias for consistency
+export const FILTER_MODES = TAG_FILTER_MODES;
+
 const TagFilterContext = createContext(null);
 
 export const TagFilterProvider = ({ children }) => {
+  const supabase = useSupabase();
+  const { user, isAuthenticated } = useAuth();
+  
   // Initialize with default values so consumers always have usable data
   const [selectedTagIds, setSelectedTagIds] = useState([]);
   const [filterMode, setFilterMode] = useState(TAG_FILTER_MODES.OR);
+  const [allTags, setAllTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Async initialization
@@ -38,6 +46,41 @@ export const TagFilterProvider = ({ children }) => {
     };
     loadPersistedFilter();
   }, []);
+
+  // Fetch all tags for the user
+  useEffect(() => {
+    if (!user?.id || !isAuthenticated) {
+      setAllTags([]);
+      return;
+    }
+
+    const fetchTags = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('tags')
+          .select('*')
+          .eq('auth_user_id', user.id)
+          .order('name', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching tags:', error);
+          return;
+        }
+
+        if (data) {
+          setAllTags(data.map(tag => ({
+            id: tag.id,
+            name: tag.name,
+            color: tag.color || '#10B981',
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching tags:', err);
+      }
+    };
+
+    fetchTags();
+  }, [user?.id, isAuthenticated, supabase]);
 
   // Async persistence
   useEffect(() => {
@@ -67,18 +110,26 @@ export const TagFilterProvider = ({ children }) => {
     );
   }, []);
 
+  // Select all tags
+  const selectAllTags = useCallback(() => {
+    setSelectedTagIds(allTags.map(tag => tag.id));
+  }, [allTags]);
+
   // Memoize context value
   const value = useMemo(() => ({
     selectedTagIds,
     filterMode,
+    allTags,
     isLoading,
     toggleTag,
     clearTags,
+    selectAllTags,
     setSelectedTagIds,
     setFilterMode,
     toggleFilterMode,
-    TAG_FILTER_MODES
-  }), [selectedTagIds, filterMode, isLoading, toggleTag, clearTags, toggleFilterMode]);
+    TAG_FILTER_MODES,
+    FILTER_MODES
+  }), [selectedTagIds, filterMode, allTags, isLoading, toggleTag, clearTags, selectAllTags, toggleFilterMode]);
 
   return (
     <TagFilterContext.Provider value={value}>

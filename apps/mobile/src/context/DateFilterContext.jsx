@@ -16,6 +16,31 @@ export const DATE_FILTER_TYPES = {
   CUSTOM: 'CUSTOM'
 };
 
+// Alias for consistency with component naming
+export const DATE_FILTER_OPTIONS = DATE_FILTER_TYPES;
+
+// Get label for filter type
+const getFilterLabel = (filterType) => {
+  switch (filterType) {
+    case DATE_FILTER_TYPES.ALL_TIME:
+      return 'All Time';
+    case DATE_FILTER_TYPES.LAST_7_DAYS:
+      return 'Last 7 Days';
+    case DATE_FILTER_TYPES.LAST_30_DAYS:
+      return 'Last 30 Days';
+    case DATE_FILTER_TYPES.THIS_MONTH:
+      return 'This Month';
+    case DATE_FILTER_TYPES.LAST_MONTH:
+      return 'Last Month';
+    case DATE_FILTER_TYPES.YEAR_TO_DATE:
+      return 'Year to Date';
+    case DATE_FILTER_TYPES.CUSTOM:
+      return 'Custom Range';
+    default:
+      return 'All Time';
+  }
+};
+
 // Get default filter (All Time)
 const getDefaultFilter = () => ({
   type: DATE_FILTER_TYPES.ALL_TIME,
@@ -123,17 +148,32 @@ export const DateFilterProvider = ({ children }) => {
   }, [filter, isLoading]);
 
   // Setter that rebuilds filter dates based on type
-  const setFilter = useCallback((newFilter) => {
-    setFilterState(buildFilter(newFilter));
+  const setFilter = useCallback((filterType) => {
+    setFilterState(buildFilter({ type: filterType }));
   }, []);
+
+  // Set custom date range
+  const setCustomRange = useCallback((startDate, endDate) => {
+    setFilterState({
+      type: DATE_FILTER_TYPES.CUSTOM,
+      startDate: startOfDay(startDate),
+      endDate: endOfDay(endDate)
+    });
+  }, []);
+
+  // Get current filter label
+  const filterLabel = useMemo(() => getFilterLabel(filter.type), [filter.type]);
 
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     filter,
+    filterLabel,
     setFilter,
+    setCustomRange,
     isLoading,
-    DATE_FILTER_TYPES
-  }), [filter, setFilter, isLoading]);
+    DATE_FILTER_TYPES,
+    DATE_FILTER_OPTIONS
+  }), [filter, filterLabel, setFilter, setCustomRange, isLoading]);
 
   // ALWAYS render the Provider - never return null
   return (
