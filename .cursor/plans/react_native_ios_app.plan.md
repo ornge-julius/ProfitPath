@@ -5,14 +5,20 @@ todos:
   - id: setup-monorepo
     content: Set up monorepo structure with npm workspaces, move web app to apps/web
     status: pending
+  - id: supabase-context
+    content: Create SupabaseContext for dependency injection, refactor hooks to use useSupabase()
+    status: pending
   - id: extract-shared
-    content: Create packages/shared with all platform-agnostic hooks, utils, and reducers
+    content: Extract shared code (calculations, reducers, refactored hooks) to packages/shared
+    status: pending
+  - id: vercel-config
+    content: Configure vercel.json for monorepo deployment
     status: pending
   - id: create-expo
     content: Initialize Expo project in apps/mobile with required dependencies
     status: pending
-  - id: storage-adapter
-    content: Create AsyncStorage adapter and port context providers
+  - id: async-contexts
+    content: Create mobile context providers with async initialization (DateFilter, TagFilter, Theme)
     status: pending
   - id: navigation
     content: Set up React Navigation with bottom tab navigator
@@ -25,9 +31,6 @@ todos:
     status: pending
   - id: ios-build
     content: Configure Expo EAS Build for iOS TestFlight distribution
-    status: pending
-  - id: vercel-config
-    content: Configure vercel.json and update Vercel dashboard settings for monorepo
     status: pending
 isProject: false
 ---
@@ -103,20 +106,104 @@ graph TB
 
 ## Shared Code Strategy
 
-### Directly Reusable (copy as-is to `packages/shared`)
+### Directly Reusable (copy to `packages/shared`)
 
 
-| File                  | Path                                  | Notes                |
-| --------------------- | ------------------------------------- | -------------------- |
-| calculations.js       | `app/src/utils/calculations.js`       | All pure functions   |
-| accountsReducer.js    | `app/src/reducers/accountsReducer.js` | Pure reducer         |
-| tradeReducer.js       | `app/src/reducers/tradeReducer.js`    | Pure reducer         |
-| usersReducer.js       | `app/src/reducers/usersReducer.js`    | Pure reducer         |
-| useAuth.js            | `app/src/hooks/useAuth.js`            | Uses Supabase only   |
-| useTradeManagement.js | `app/src/hooks/useTradeManagement.js` | Uses Supabase only   |
-| useFilteredTrades.js  | `app/src/hooks/useFilteredTrades.js`  | Pure filtering logic |
-| useTagManagement.js   | `app/src/hooks/useTagManagement.js`   | Wrapper hook         |
+| File                  | Path                                  | Notes                                  |
+| --------------------- | ------------------------------------- | -------------------------------------- |
+| calculations.js       | `app/src/utils/calculations.js`       | All pure functions - copy as-is        |
+| accountsReducer.js    | `app/src/reducers/accountsReducer.js` | Pure reducer - copy as-is              |
+| tradeReducer.js       | `app/src/reducers/tradeReducer.js`    | Pure reducer - copy as-is              |
+| usersReducer.js       | `app/src/reducers/usersReducer.js`    | Pure reducer - copy as-is              |
+| useFilteredTrades.js  | `app/src/hooks/useFilteredTrades.js`  | Pure filtering logic - copy as-is      |
 
+### Needs Import Path Updates (Supabase dependency)
+
+These hooks import from `../supabaseClient` which will break when moved. They must be refactored to use dependency injection:
+
+| File                  | Current Import                          | Required Change                        |
+| --------------------- | --------------------------------------- | -------------------------------------- |
+| useAuth.js            | `import { supabase } from '../supabaseClient'` | Accept `supabase` as parameter or use context |
+| useTradeManagement.js | `import { supabase } from '../supabaseClient'` | Accept `supabase` as parameter or use context |
+| useTagManagement.js   | Uses TagContext which uses supabaseClient      | Refactor TagContext for DI             |
+
+**Solution: Supabase Client Factory Pattern**
+
+Create a shared Supabase context that each app initializes with its own credentials:
+
+```javascript
+// packages/shared/src/supabase/SupabaseContext.js
+import { createContext, useContext } from 'react';
+
+const SupabaseContext = createContext(null);
+
+export const SupabaseProvider = ({ client, children }) => (
+  <SupabaseContext.Provider value={client}>
+    {children}
+  </SupabaseContext.Provider>
+);
+
+export const useSupabase = () => {
+  const client = useContext(SupabaseContext);
+  if (!client) {
+    throw new Error('useSupabase must be used within a SupabaseProvider');
+  }
+  return client;
+};
+```
+
+Then update shared hooks to use `useSupabase()` instead of direct imports:
+
+```javascript
+// packages/shared/src/hooks/useAuth.js (refactored)
+import { useSupabase } from '../supabase/SupabaseContext';
+
+export const useAuth = () => {
+  const supabase = useSupabase(); // Instead of: import { supabase } from '../supabaseClient'
+  // ... rest of hook unchanged
+};
+```
+
+Each app initializes its own client:
+
+```javascript
+// apps/web/src/App.jsx
+import { createClient } from '@supabase/supabase-js';
+import { SupabaseProvider } from '@profitpath/shared';
+
+const supabase = createClient(
+  process.env.REACT_APP_SUPABASE_URL,
+  process.env.REACT_APP_SUPABASE_ANON_KEY
+);
+
+function App() {
+  return (
+    <SupabaseProvider client={supabase}>
+      {/* app content */}
+    </SupabaseProvider>
+  );
+}
+```
+
+```javascript
+// apps/mobile/App.tsx
+import { createClient } from '@supabase/supabase-js';
+import { SupabaseProvider } from '@profitpath/shared';
+import Constants from 'expo-constants';
+
+const supabase = createClient(
+  Constants.expoConfig.extra.supabaseUrl,
+  Constants.expoConfig.extra.supabaseAnonKey
+);
+
+function App() {
+  return (
+    <SupabaseProvider client={supabase}>
+      {/* app content */}
+    </SupabaseProvider>
+  );
+}
+```
 
 ### Needs Adaptation (platform-specific layer)
 
@@ -128,6 +215,80 @@ graph TB
 | TagFilterContext.jsx  | `localStorage`, URL params  | `AsyncStorage`, navigation state  |
 | ThemeContext.jsx      | `localStorage`, DOM classes | `AsyncStorage`, RN Appearance API |
 
+**Critical: Sync vs Async Storage**
+
+`localStorage` is **synchronous** but `AsyncStorage` is **asynchronous**. The web contexts use patterns like:
+
+```javascript
+// Web (synchronous) - works immediately
+const storedValue = window.localStorage.getItem(STORAGE_KEY);
+const parsed = JSON.parse(storedValue);
+```
+
+This cannot be directly replaced with AsyncStorage:
+
+```javascript
+// BROKEN - getItem returns Promise, not string
+const storedValue = storage.getItem(STORAGE_KEY); // Promise!
+const parsed = JSON.parse(storedValue); // Fails - can't parse a Promise
+```
+
+**Solution: Async-aware Context Initialization**
+
+Context providers for React Native must handle async initialization with loading states:
+
+```javascript
+// apps/mobile/src/context/DateFilterContext.jsx
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export const DateFilterProvider = ({ children }) => {
+  const [filter, setFilter] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Async initialization
+  useEffect(() => {
+    const loadPersistedFilter = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setFilter(buildFilter(parsed));
+        } else {
+          setFilter(getDefaultFilter());
+        }
+      } catch (error) {
+        setFilter(getDefaultFilter());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadPersistedFilter();
+  }, []);
+
+  // Async persistence (fire-and-forget)
+  useEffect(() => {
+    if (!isLoading && filter) {
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(filter)).catch(() => {});
+    }
+  }, [filter, isLoading]);
+
+  if (isLoading) {
+    return null; // Or a loading spinner
+  }
+
+  return (
+    <DateFilterContext.Provider value={/* ... */}>
+      {children}
+    </DateFilterContext.Provider>
+  );
+};
+```
+
+This pattern:
+1. Shows loading state until storage is read
+2. Uses `useEffect` for async initialization
+3. Persists changes with fire-and-forget async writes
 
 ### Cannot Share (platform-specific UI)
 
@@ -144,18 +305,27 @@ graph TB
 3. Move existing `app/` to `apps/web/`
 4. Configure npm workspaces in root package.json
 5. Create `vercel.json` with monorepo settings
-6. Extract shared code to `packages/shared/`
-7. Update web app imports to use `@profitpath/shared`
-8. Test locally: `npm install && npm run build:web`
-9. Push branch and verify Vercel preview deployment
-10. Merge to main only after preview works
+6. Create `packages/shared/src/supabase/SupabaseContext.js` (client factory)
+7. Extract shared code to `packages/shared/`:
+   - Copy `calculations.js`, all reducers, `useFilteredTrades.js` as-is
+   - Refactor `useAuth.js`, `useTradeManagement.js` to use `useSupabase()` instead of direct imports
+8. Update web app:
+   - Wrap app in `<SupabaseProvider client={supabase}>`
+   - Update imports to use `@profitpath/shared`
+9. Test locally: `npm install && npm run build:web`
+10. Push branch and verify Vercel preview deployment
+11. Merge to main only after preview works
 
 ### Phase 2: React Native Project
 
 1. Create Expo project in `apps/mobile/`
 2. Install dependencies: `@supabase/supabase-js`, `date-fns`, `@react-native-async-storage/async-storage`, `react-navigation`, `nativewind`
-3. Create storage adapter that wraps AsyncStorage with same interface as localStorage
-4. Port context providers with storage adapter
+3. Create async storage utilities (`apps/mobile/src/utils/storage.js`)
+4. Create mobile-specific context providers with async initialization:
+   - `DateFilterContext` - async load from storage, loading state
+   - `TagFilterContext` - async load from storage, loading state  
+   - `ThemeContext` - use RN Appearance API + async persistence
+5. Initialize Supabase client and wrap app in `<SupabaseProvider>`
 
 ### Phase 3: Core Features
 
@@ -196,18 +366,56 @@ graph TB
 }
 ```
 
-### Storage Adapter Pattern
+### Storage Utilities for React Native
+
+Since `AsyncStorage` is async and `localStorage` is sync, do NOT create a drop-in adapter. Instead, use async utilities:
 
 ```javascript
-// apps/mobile/src/adapters/storage.js
+// apps/mobile/src/utils/storage.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const storage = {
-  getItem: (key) => AsyncStorage.getItem(key),
-  setItem: (key, value) => AsyncStorage.setItem(key, value),
-  removeItem: (key) => AsyncStorage.removeItem(key),
+  // All methods return Promises - callers must await
+  getItem: async (key) => {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch (error) {
+      console.error('Storage read error:', error);
+      return null;
+    }
+  },
+  
+  setItem: async (key, value) => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Storage write error:', error);
+    }
+  },
+  
+  removeItem: async (key) => {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (error) {
+      console.error('Storage remove error:', error);
+    }
+  },
+};
+
+// Helper for JSON data
+export const storageJson = {
+  get: async (key) => {
+    const value = await storage.getItem(key);
+    return value ? JSON.parse(value) : null;
+  },
+  
+  set: async (key, value) => {
+    await storage.setItem(key, JSON.stringify(value));
+  },
 };
 ```
+
+**Important:** Context providers must be redesigned for async initialization (see "Async-aware Context Initialization" above). You cannot simply replace `localStorage.getItem()` with `storage.getItem()` - the calling code must handle Promises.
 
 ## Dependencies for React Native App
 
@@ -311,11 +519,13 @@ If deployment fails after merge:
 ## Risks and Mitigations
 
 
-| Risk                      | Mitigation                                                                      |
-| ------------------------- | ------------------------------------------------------------------------------- |
-| Monorepo complexity       | Start simple with npm workspaces; consider Turborepo later if needed            |
-| Chart library differences | Prioritize functionality over visual parity; charts may look slightly different |
-| iOS build complexity      | Use Expo EAS Build to handle signing and provisioning                           |
-| Vercel deployment break   | Use feature branch + preview deployment; verify before merging to main          |
+| Risk                       | Mitigation                                                                      |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| Monorepo complexity        | Start simple with npm workspaces; consider Turborepo later if needed            |
+| Chart library differences  | Prioritize functionality over visual parity; charts may look slightly different |
+| iOS build complexity       | Use Expo EAS Build to handle signing and provisioning                           |
+| Vercel deployment break    | Use feature branch + preview deployment; verify before merging to main          |
+| Broken Supabase imports    | Use SupabaseContext for dependency injection; refactor hooks before moving      |
+| Sync/async storage mismatch| Redesign context providers for async initialization; never use drop-in adapter |
 
 
