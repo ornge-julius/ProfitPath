@@ -26,6 +26,9 @@ todos:
   - id: ios-build
     content: Configure Expo EAS Build for iOS TestFlight distribution
     status: pending
+  - id: vercel-config
+    content: Configure vercel.json and update Vercel dashboard settings for monorepo
+    status: pending
 isProject: false
 ---
 
@@ -134,13 +137,18 @@ graph TB
 
 ## Implementation Steps
 
-### Phase 1: Monorepo Setup
+### Phase 1: Monorepo Setup (on feature branch)
 
-1. Create `packages/shared/` directory with package.json
-2. Move existing `app/` to `apps/web/`
-3. Configure npm workspaces in root package.json
-4. Extract shared code to `packages/shared/`
-5. Update web app imports to use `@profitpath/shared`
+1. Create feature branch: `git checkout -b monorepo-restructure`
+2. Create directory structure: `apps/`, `packages/shared/`
+3. Move existing `app/` to `apps/web/`
+4. Configure npm workspaces in root package.json
+5. Create `vercel.json` with monorepo settings
+6. Extract shared code to `packages/shared/`
+7. Update web app imports to use `@profitpath/shared`
+8. Test locally: `npm install && npm run build:web`
+9. Push branch and verify Vercel preview deployment
+10. Merge to main only after preview works
 
 ### Phase 2: React Native Project
 
@@ -219,6 +227,80 @@ export const storage = {
 }
 ```
 
+## Vercel Deployment Strategy
+
+Moving to a monorepo requires updating Vercel to find the web app in its new location. Follow these steps in order:
+
+### Step 1: Create vercel.json (before moving files)
+
+Create `vercel.json` in the **repository root**:
+
+```json
+{
+  "buildCommand": "cd apps/web && npm run build",
+  "outputDirectory": "apps/web/build",
+  "installCommand": "npm install",
+  "framework": "create-react-app"
+}
+```
+
+### Step 2: Update Vercel Dashboard Settings
+
+Before deploying the restructured code:
+
+1. Go to your Vercel project dashboard
+2. Navigate to **Settings** > **General**
+3. Update **Root Directory** to: `apps/web`
+4. Navigate to **Settings** > **Environment Variables**
+5. Verify `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` are set
+
+### Step 3: Safe Migration Order
+
+Execute in this exact order to avoid broken deployments:
+
+1. **Create a feature branch** - do all work here first
+2. **Set up monorepo structure** - create directories, move files
+3. **Test locally** - run `npm install` at root, then `npm run build` in apps/web
+4. **Push feature branch** - Vercel will create a preview deployment
+5. **Verify preview deployment works** - check the preview URL
+6. **Merge to main** - only after preview is confirmed working
+
+### Step 4: Monorepo-aware vercel.json (final version)
+
+After restructuring, use this enhanced configuration:
+
+```json
+{
+  "buildCommand": "npm run build --workspace=apps/web",
+  "outputDirectory": "apps/web/build",
+  "installCommand": "npm install",
+  "framework": "create-react-app",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/web packages/shared"
+}
+```
+
+The `ignoreCommand` prevents unnecessary rebuilds when only mobile app changes are pushed.
+
+### Environment Variables for Monorepo
+
+Root `package.json` should include workspace-aware scripts:
+
+```json
+{
+  "scripts": {
+    "build:web": "npm run build --workspace=apps/web",
+    "start:web": "npm run start --workspace=apps/web",
+    "build:mobile": "cd apps/mobile && npx expo export"
+  }
+}
+```
+
+### Rollback Plan
+
+If deployment fails after merge:
+1. Vercel keeps previous deployments - use **Deployments** tab to instantly rollback
+2. Or revert the git commit and push to trigger a rebuild
+
 ## Risks and Mitigations
 
 
@@ -227,5 +309,6 @@ export const storage = {
 | Monorepo complexity       | Start simple with npm workspaces; consider Turborepo later if needed            |
 | Chart library differences | Prioritize functionality over visual parity; charts may look slightly different |
 | iOS build complexity      | Use Expo EAS Build to handle signing and provisioning                           |
+| Vercel deployment break   | Use feature branch + preview deployment; verify before merging to main          |
 
 
