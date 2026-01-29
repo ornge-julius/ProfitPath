@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
-import { useTradeManagement } from './hooks/useTradeManagement';
+import { createClient } from '@supabase/supabase-js';
+import { SupabaseProvider, useTradeManagement, useAuth } from '@profitpath/shared';
 import { useAppState } from './hooks/useAppState';
-import { useAuth } from './hooks/useAuth';
 import Header from './components/ui/Header';
 import TradeForm from './components/forms/TradeForm';
 import SettingsForm from './components/forms/SettingsForm';
@@ -427,23 +427,31 @@ function AppContent() {
   );
 }
 
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.REACT_APP_SUPABASE_URL,
+  process.env.REACT_APP_SUPABASE_ANON_KEY
+);
+
 function App() {
   return (
-    <ThemeProvider>
-      <DemoModeProvider>
-        <DateFilterProvider>
-          <TagFilterProvider>
-            <TagProvider>
-              <BrowserRouter>
-                <AppContent />
-                <SpeedInsights />
-                <Analytics />
-              </BrowserRouter>
-            </TagProvider>
-          </TagFilterProvider>
-        </DateFilterProvider>
-      </DemoModeProvider>
-    </ThemeProvider>
+    <SupabaseProvider client={supabase}>
+      <ThemeProvider>
+        <DemoModeProvider>
+          <DateFilterProvider>
+            <TagFilterProvider>
+              <TagProvider>
+                <BrowserRouter>
+                  <AppContent />
+                  <SpeedInsights />
+                  <Analytics />
+                </BrowserRouter>
+              </TagProvider>
+            </TagFilterProvider>
+          </DateFilterProvider>
+        </DemoModeProvider>
+      </ThemeProvider>
+    </SupabaseProvider>
   );
 }
 

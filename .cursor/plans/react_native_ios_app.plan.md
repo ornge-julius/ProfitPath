@@ -109,23 +109,26 @@ graph TB
 ### Directly Reusable (copy to `packages/shared`)
 
 
-| File                  | Path                                  | Notes                                  |
-| --------------------- | ------------------------------------- | -------------------------------------- |
-| calculations.js       | `app/src/utils/calculations.js`       | All pure functions - copy as-is        |
-| accountsReducer.js    | `app/src/reducers/accountsReducer.js` | Pure reducer - copy as-is              |
-| tradeReducer.js       | `app/src/reducers/tradeReducer.js`    | Pure reducer - copy as-is              |
-| usersReducer.js       | `app/src/reducers/usersReducer.js`    | Pure reducer - copy as-is              |
-| useFilteredTrades.js  | `app/src/hooks/useFilteredTrades.js`  | Pure filtering logic - copy as-is      |
+| File                 | Path                                  | Notes                             |
+| -------------------- | ------------------------------------- | --------------------------------- |
+| calculations.js      | `app/src/utils/calculations.js`       | All pure functions - copy as-is   |
+| accountsReducer.js   | `app/src/reducers/accountsReducer.js` | Pure reducer - copy as-is         |
+| tradeReducer.js      | `app/src/reducers/tradeReducer.js`    | Pure reducer - copy as-is         |
+| usersReducer.js      | `app/src/reducers/usersReducer.js`    | Pure reducer - copy as-is         |
+| useFilteredTrades.js | `app/src/hooks/useFilteredTrades.js`  | Pure filtering logic - copy as-is |
+
 
 ### Needs Import Path Updates (Supabase dependency)
 
 These hooks import from `../supabaseClient` which will break when moved. They must be refactored to use dependency injection:
 
-| File                  | Current Import                          | Required Change                        |
-| --------------------- | --------------------------------------- | -------------------------------------- |
+
+| File                  | Current Import                                 | Required Change                               |
+| --------------------- | ---------------------------------------------- | --------------------------------------------- |
 | useAuth.js            | `import { supabase } from '../supabaseClient'` | Accept `supabase` as parameter or use context |
 | useTradeManagement.js | `import { supabase } from '../supabaseClient'` | Accept `supabase` as parameter or use context |
-| useTagManagement.js   | Uses TagContext which uses supabaseClient      | Refactor TagContext for DI             |
+| useTagManagement.js   | Uses TagContext which uses supabaseClient      | Refactor TagContext for DI                    |
+
 
 **Solution: Supabase Client Factory Pattern**
 
@@ -215,6 +218,7 @@ function App() {
 | TagFilterContext.jsx  | `localStorage`, URL params  | `AsyncStorage`, navigation state  |
 | ThemeContext.jsx      | `localStorage`, DOM classes | `AsyncStorage`, RN Appearance API |
 
+
 **Critical: Sync vs Async Storage**
 
 `localStorage` is **synchronous** but `AsyncStorage` is **asynchronous**. The web contexts use patterns like:
@@ -302,9 +306,10 @@ export const useDateFilter = () => {
 ```
 
 **Why this pattern is correct:**
+
 1. **Never return null** - Always render the Provider to preserve component tree and child state
 2. **Initialize with default value** - `useState(getDefaultFilter())` ensures consumers always have usable data
-3. **Expose `isLoading`** - Consumers can optionally show loading UI (skeleton, spinner) without breaking the tree
+3. **Expose `isLoading**` - Consumers can optionally show loading UI (skeleton, spinner) without breaking the tree
 4. **Memoize context value** - Prevents unnecessary re-renders of all consumers
 
 **How consumers handle loading (optional):**
@@ -337,11 +342,11 @@ return <TradeList filter={filter} />;
 5. Create `vercel.json` with monorepo settings
 6. Create `packages/shared/src/supabase/SupabaseContext.js` (client factory)
 7. Extract shared code to `packages/shared/`:
-   - Copy `calculations.js`, all reducers, `useFilteredTrades.js` as-is
-   - Refactor `useAuth.js`, `useTradeManagement.js` to use `useSupabase()` instead of direct imports
+  - Copy `calculations.js`, all reducers, `useFilteredTrades.js` as-is
+  - Refactor `useAuth.js`, `useTradeManagement.js` to use `useSupabase()` instead of direct imports
 8. Update web app:
-   - Wrap app in `<SupabaseProvider client={supabase}>`
-   - Update imports to use `@profitpath/shared`
+  - Wrap app in `<SupabaseProvider client={supabase}>`
+  - Update imports to use `@profitpath/shared`
 9. Test locally: `npm install && npm run build:web`
 10. Push branch and verify Vercel preview deployment
 11. Merge to main only after preview works
@@ -352,9 +357,9 @@ return <TradeList filter={filter} />;
 2. Install dependencies: `@supabase/supabase-js`, `date-fns`, `@react-native-async-storage/async-storage`, `react-navigation`, `nativewind`
 3. Create async storage utilities (`apps/mobile/src/utils/storage.js`)
 4. Create mobile-specific context providers with async initialization:
-   - `DateFilterContext` - async load from storage, loading state
-   - `TagFilterContext` - async load from storage, loading state  
-   - `ThemeContext` - use RN Appearance API + async persistence
+  - `DateFilterContext` - async load from storage, loading state
+  - `TagFilterContext` - async load from storage, loading state  
+  - `ThemeContext` - use RN Appearance API + async persistence
 5. Initialize Supabase client and wrap app in `<SupabaseProvider>`
 
 ### Phase 3: Core Features
@@ -400,6 +405,7 @@ return <TradeList filter={filter} />;
 ```
 
 **Why peerDependencies for React:**
+
 - The shared package uses React hooks (`useState`, `useEffect`, `useCallback`, `createContext`, `useContext`)
 - React must be listed as a peer dependency, NOT a direct dependency
 - Direct dependency would bundle a separate React instance, causing the "Invalid hook call" error
@@ -529,11 +535,12 @@ After restructuring, use this enhanced configuration:
 The `ignoreCommand` prevents unnecessary rebuilds when only mobile app changes are pushed.
 
 **How it works:**
+
 1. `git rev-parse --verify HEAD^` checks if a parent commit exists
 2. If no parent exists (first deployment, shallow clone), the command fails and exits non-zero → Vercel proceeds with build
 3. If parent exists, `git diff --quiet` runs:
-   - Exit 0 (no changes in apps/web or packages/shared) → Vercel skips build
-   - Exit 1 (changes detected) → Vercel proceeds with build
+  - Exit 0 (no changes in apps/web or packages/shared) → Vercel skips build
+  - Exit 1 (changes detected) → Vercel proceeds with build
 
 ### Environment Variables for Monorepo
 
@@ -552,19 +559,20 @@ Root `package.json` should include workspace-aware scripts:
 ### Rollback Plan
 
 If deployment fails after merge:
+
 1. Vercel keeps previous deployments - use **Deployments** tab to instantly rollback
 2. Or revert the git commit and push to trigger a rebuild
 
 ## Risks and Mitigations
 
 
-| Risk                       | Mitigation                                                                      |
-| -------------------------- | ------------------------------------------------------------------------------- |
-| Monorepo complexity        | Start simple with npm workspaces; consider Turborepo later if needed            |
-| Chart library differences  | Prioritize functionality over visual parity; charts may look slightly different |
-| iOS build complexity       | Use Expo EAS Build to handle signing and provisioning                           |
-| Vercel deployment break    | Use feature branch + preview deployment; verify before merging to main          |
-| Broken Supabase imports    | Use SupabaseContext for dependency injection; refactor hooks before moving      |
-| Sync/async storage mismatch| Redesign context providers for async initialization; never use drop-in adapter |
+| Risk                        | Mitigation                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| Monorepo complexity         | Start simple with npm workspaces; consider Turborepo later if needed            |
+| Chart library differences   | Prioritize functionality over visual parity; charts may look slightly different |
+| iOS build complexity        | Use Expo EAS Build to handle signing and provisioning                           |
+| Vercel deployment break     | Use feature branch + preview deployment; verify before merging to main          |
+| Broken Supabase imports     | Use SupabaseContext for dependency injection; refactor hooks before moving      |
+| Sync/async storage mismatch | Redesign context providers for async initialization; never use drop-in adapter  |
 
 
