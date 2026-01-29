@@ -235,18 +235,21 @@ const parsed = JSON.parse(storedValue); // Fails - can't parse a Promise
 
 **Solution: Async-aware Context Initialization**
 
-Context providers for React Native must handle async initialization with loading states:
+Context providers for React Native must handle async initialization with loading states. **Critical:** Always render the Provider to preserve the component tree.
 
 ```javascript
 // apps/mobile/src/context/DateFilterContext.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const DateFilterContext = createContext(null);
+
 export const DateFilterProvider = ({ children }) => {
-  const [filter, setFilter] = useState(null);
+  // Initialize with default value (not null) so consumers always have usable data
+  const [filter, setFilter] = useState(getDefaultFilter());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Async initialization
+  // Async initialization - updates filter once storage is read
   useEffect(() => {
     const loadPersistedFilter = async () => {
       try {
@@ -254,11 +257,10 @@ export const DateFilterProvider = ({ children }) => {
         if (stored) {
           const parsed = JSON.parse(stored);
           setFilter(buildFilter(parsed));
-        } else {
-          setFilter(getDefaultFilter());
         }
+        // If no stored value, keep the default (already set in useState)
       } catch (error) {
-        setFilter(getDefaultFilter());
+        // Keep default on error
       } finally {
         setIsLoading(false);
       }
@@ -268,27 +270,55 @@ export const DateFilterProvider = ({ children }) => {
 
   // Async persistence (fire-and-forget)
   useEffect(() => {
-    if (!isLoading && filter) {
+    if (!isLoading) {
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(filter)).catch(() => {});
     }
   }, [filter, isLoading]);
 
-  if (isLoading) {
-    return null; // Or a loading spinner
-  }
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
+    filter,
+    setFilter,
+    isLoading, // Expose loading state so consumers can show skeletons if needed
+  }), [filter, isLoading]);
 
+  // ALWAYS render the Provider - never return null!
+  // Returning null unmounts children and loses their local state
   return (
-    <DateFilterContext.Provider value={/* ... */}>
+    <DateFilterContext.Provider value={value}>
       {children}
     </DateFilterContext.Provider>
   );
 };
+
+// Consumer hook
+export const useDateFilter = () => {
+  const context = useContext(DateFilterContext);
+  if (!context) {
+    throw new Error('useDateFilter must be used within DateFilterProvider');
+  }
+  return context;
+};
 ```
 
-This pattern:
-1. Shows loading state until storage is read
-2. Uses `useEffect` for async initialization
-3. Persists changes with fire-and-forget async writes
+**Why this pattern is correct:**
+1. **Never return null** - Always render the Provider to preserve component tree and child state
+2. **Initialize with default value** - `useState(getDefaultFilter())` ensures consumers always have usable data
+3. **Expose `isLoading`** - Consumers can optionally show loading UI (skeleton, spinner) without breaking the tree
+4. **Memoize context value** - Prevents unnecessary re-renders of all consumers
+
+**How consumers handle loading (optional):**
+
+```javascript
+// In a screen component
+const { filter, isLoading } = useDateFilter();
+
+if (isLoading) {
+  return <SkeletonPlaceholder />; // Consumer decides how to handle loading
+}
+
+return <TradeList filter={filter} />;
+```
 
 ### Cannot Share (platform-specific UI)
 
@@ -362,9 +392,18 @@ This pattern:
   "dependencies": {
     "@supabase/supabase-js": "^2.56.1",
     "date-fns": "^4.1.0"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
   }
 }
 ```
+
+**Why peerDependencies for React:**
+- The shared package uses React hooks (`useState`, `useEffect`, `useCallback`, `createContext`, `useContext`)
+- React must be listed as a peer dependency, NOT a direct dependency
+- Direct dependency would bundle a separate React instance, causing the "Invalid hook call" error
+- peerDependencies ensures the consuming app (web or mobile) provides React, avoiding duplicates
 
 ### Storage Utilities for React Native
 
