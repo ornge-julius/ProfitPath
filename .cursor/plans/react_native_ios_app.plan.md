@@ -275,11 +275,18 @@ After restructuring, use this enhanced configuration:
   "outputDirectory": "apps/web/build",
   "installCommand": "npm install",
   "framework": "create-react-app",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/web packages/shared"
+  "ignoreCommand": "git rev-parse --verify HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- apps/web packages/shared"
 }
 ```
 
 The `ignoreCommand` prevents unnecessary rebuilds when only mobile app changes are pushed.
+
+**How it works:**
+1. `git rev-parse --verify HEAD^` checks if a parent commit exists
+2. If no parent exists (first deployment, shallow clone), the command fails and exits non-zero → Vercel proceeds with build
+3. If parent exists, `git diff --quiet` runs:
+   - Exit 0 (no changes in apps/web or packages/shared) → Vercel skips build
+   - Exit 1 (changes detected) → Vercel proceeds with build
 
 ### Environment Variables for Monorepo
 
