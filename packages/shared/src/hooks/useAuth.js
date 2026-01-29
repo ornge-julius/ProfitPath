@@ -51,21 +51,12 @@ export const useAuth = () => {
 
   // Sign in with email and password
   const signInWithEmail = useCallback(async (email, password) => {
-    // #region agent log
-    console.log('[DEBUG useAuth] signInWithEmail called, supabase exists:', !!supabase, 'auth exists:', !!supabase?.auth);
-    // #endregion
     try {
       setIsLoading(true);
-      // #region agent log
-      console.log('[DEBUG useAuth] Calling supabase.auth.signInWithPassword...');
-      // #endregion
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
-      // #region agent log
-      console.log('[DEBUG useAuth] Supabase returned - hasData:', !!data, 'hasError:', !!error, 'errorMsg:', error?.message);
-      // #endregion
 
       if (error) {
         throw new Error(error.message);
@@ -77,9 +68,6 @@ export const useAuth = () => {
         return data.user;
       }
     } catch (err) {
-      // #region agent log
-      console.log('[DEBUG useAuth] EXCEPTION:', err.message, err.name);
-      // #endregion
       throw err;
     } finally {
       setIsLoading(false);

@@ -19,10 +19,6 @@ import RootNavigator from './src/navigation/RootNavigator';
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
-// #region agent log
-console.log('[DEBUG App.js] Supabase URL in use:', supabaseUrl, '(length:', supabaseUrl?.length + ')');
-// #endregion
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: AsyncStorage,
