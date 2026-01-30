@@ -47,40 +47,41 @@ export const TagFilterProvider = ({ children }) => {
     loadPersistedFilter();
   }, []);
 
-  // Fetch all tags for the user
-  useEffect(() => {
+  // Fetch all tags for the user (with usage_count via trade_tags)
+  const fetchTags = useCallback(async () => {
     if (!user?.id || !isAuthenticated) {
       setAllTags([]);
       return;
     }
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*, trade_tags(id)')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
 
-    const fetchTags = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('tags')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('name', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching tags:', error);
-          return;
-        }
-
-        if (data) {
-          setAllTags(data.map(tag => ({
-            id: tag.id,
-            name: tag.name,
-            color: tag.color || '#10B981',
-          })));
-        }
-      } catch (err) {
-        console.error('Error fetching tags:', err);
+      if (error) {
+        console.error('Error fetching tags:', error);
+        setAllTags([]);
+        return;
       }
-    };
 
-    fetchTags();
+      if (data) {
+        setAllTags(data.map(tag => ({
+          id: tag.id,
+          name: tag.name,
+          color: tag.color || null,
+          usage_count: tag.trade_tags?.length ?? 0,
+        })));
+      }
+    } catch (err) {
+      console.error('Error fetching tags:', err);
+    }
   }, [user?.id, isAuthenticated, supabase]);
+
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
 
   // Async persistence
   useEffect(() => {
@@ -115,6 +116,56 @@ export const TagFilterProvider = ({ children }) => {
     setSelectedTagIds(allTags.map(tag => tag.id));
   }, [allTags]);
 
+  // Tag CRUD (for Tags management screen)
+  const createTag = useCallback(async (tagData) => {
+    if (!user?.id) return null;
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .insert([{ name: tagData.name, color: tagData.color || null, user_id: user.id }])
+        .select()
+        .single();
+      if (error) throw error;
+      await fetchTags();
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  }, [user?.id, fetchTags, supabase]);
+
+  const updateTag = useCallback(async (tagId, tagData) => {
+    if (!user?.id) return null;
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .update({ name: tagData.name, color: tagData.color ?? null })
+        .eq('id', tagId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      await fetchTags();
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  }, [user?.id, fetchTags, supabase]);
+
+  const deleteTag = useCallback(async (tagId) => {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from('tags')
+        .delete()
+        .eq('id', tagId)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      await fetchTags();
+    } catch (err) {
+      throw err;
+    }
+  }, [user?.id, fetchTags, supabase]);
+
   // Memoize context value
   const value = useMemo(() => ({
     selectedTagIds,
@@ -127,9 +178,13 @@ export const TagFilterProvider = ({ children }) => {
     setSelectedTagIds,
     setFilterMode,
     toggleFilterMode,
+    createTag,
+    updateTag,
+    deleteTag,
+    refetchTags: fetchTags,
     TAG_FILTER_MODES,
     FILTER_MODES
-  }), [selectedTagIds, filterMode, allTags, isLoading, toggleTag, clearTags, selectAllTags, toggleFilterMode]);
+  }), [selectedTagIds, filterMode, allTags, isLoading, toggleTag, clearTags, selectAllTags, toggleFilterMode, createTag, updateTag, deleteTag, fetchTags]);
 
   return (
     <TagFilterContext.Provider value={value}>

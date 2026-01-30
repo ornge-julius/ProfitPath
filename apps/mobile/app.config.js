@@ -33,6 +33,6 @@ export default {
         projectId: "your-project-id-here"
       }
     },
-    plugins: []
+    plugins: ["expo-font"]
   }
 };

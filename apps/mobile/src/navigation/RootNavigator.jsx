@@ -3,24 +3,23 @@ import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '@profitpath/shared';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 
 const Stack = createNativeStackNavigator();
 
-/**
- * Loading screen shown while checking auth state.
- */
 function LoadingScreen() {
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors } = useTheme();
 
   return (
-    <View style={[styles.loadingContainer, { backgroundColor: themeColors.background }]}>
-      <Text style={[styles.logo, { color: themeColors.primary }]}>ProfitPath</Text>
-      <ActivityIndicator size="large" color={themeColors.primary} style={styles.spinner} />
+    <View style={[styles.loadingContainer, { backgroundColor: colors.bgPrimary }]}>
+      <View style={styles.logoRow}>
+        <Text style={[styles.logoProfit, { color: colors.textPrimary }]}>Profit</Text>
+        <Text style={[styles.logoPath, { color: colors.accentGold }]}>Path</Text>
+      </View>
+      <ActivityIndicator size="large" color={colors.accentGold} style={styles.spinner} />
     </View>
   );
 }
@@ -56,11 +55,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logo: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    letterSpacing: -1,
-  },
+  logoRow: { flexDirection: 'row', alignItems: 'baseline' },
+  logoProfit: { fontSize: 32, fontWeight: '500', letterSpacing: -0.5 },
+  logoPath: { fontSize: 32, fontWeight: '500', letterSpacing: -0.5 },
   spinner: {
     marginTop: 24,
   },

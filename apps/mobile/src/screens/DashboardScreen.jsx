@@ -5,35 +5,27 @@ import { useTheme, colors } from '../context/ThemeContext';
 import { useDateFilter, filterTradesByExitDate } from '../context/DateFilterContext';
 import { useTagFilter, filterTradesByTags } from '../context/TagFilterContext';
 import { useAppStateContext } from '../context/AppStateContext';
-import { useAuth, useTradeManagement, calculateMetrics, generateAccountBalanceData, generateCumulativeProfitData, generateMonthlyNetPNLData } from '@profitpath/shared';
+import { useAuth, useTradeManagement, calculateMetrics, generateAccountBalanceData, generateMonthlyNetPNLData } from '@profitpath/shared';
 import DateFilterModal from '../components/DateFilterModal';
 import TagFilterModal from '../components/TagFilterModal';
+import AccountSelectorModal from '../components/AccountSelectorModal';
+import Header from '../components/Header';
+import { LuxeCard, LuxeStatValue, LuxeStatLabel } from '../components/ui';
+import { SPACING } from '../theme/tokens';
 
 const screenWidth = Dimensions.get('window').width;
 
-// Metrics Card Component
-const MetricsCard = ({ title, value, subtitle, isPositive, isDark }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-  
+function MetricsCard({ label, value, valueColor, colors }) {
   return (
-    <View style={[styles.card, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-      <Text style={[styles.cardTitle, { color: themeColors.textSecondary }]}>{title}</Text>
-      <Text style={[
-        styles.cardValue,
-        { color: isPositive === undefined ? themeColors.text : isPositive ? themeColors.success : themeColors.danger }
-      ]}>
-        {value}
-      </Text>
-      {subtitle && (
-        <Text style={[styles.cardSubtitle, { color: themeColors.textMuted }]}>{subtitle}</Text>
-      )}
-    </View>
+    <LuxeCard style={styles.card}>
+      <LuxeStatLabel>{label}</LuxeStatLabel>
+      <LuxeStatValue style={valueColor ? { color: valueColor } : undefined}>{value}</LuxeStatValue>
+    </LuxeCard>
   );
-};
+}
 
 export default function DashboardScreen() {
-  const { isDark, isLoading: themeLoading } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { isDark, isLoading: themeLoading, toggleTheme, colors: themeColors } = useTheme();
   
   const { user, isLoading: authLoading } = useAuth();
   const { filter, filterLabel, isLoading: dateFilterLoading } = useDateFilter();
@@ -45,6 +37,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [showTagFilter, setShowTagFilter] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   // Apply filters
   const filteredTrades = useMemo(() => {
@@ -95,22 +88,18 @@ export default function DashboardScreen() {
   const winLossPieData = useMemo(() => {
     if (metrics.totalTrades === 0) return [];
     return [
-      { value: metrics.winningTrades, color: themeColors.success, text: `${metrics.winRate.toFixed(0)}%` },
-      { value: metrics.losingTrades, color: isDark ? '#374151' : '#E5E7EB' },
+      { value: metrics.winningTrades, color: themeColors.win, text: `${metrics.winRate.toFixed(0)}%` },
+      { value: metrics.losingTrades, color: themeColors.loss },
     ];
-  }, [metrics, themeColors, isDark]);
+  }, [metrics, themeColors]);
 
   const monthlyPnlData = useMemo(() => {
     if (!filteredTrades.length) return [];
     const data = generateMonthlyNetPNLData(filteredTrades);
-    // #region agent log
-    const first = data && data[0];
-    fetch('http://127.0.0.1:7242/ingest/37fdad3c-5161-43bf-8099-15b2afc5b182',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardScreen.jsx:monthlyPnlData',message:'monthly data shape',data:{dataLength:data?.length,firstKeys:first?Object.keys(first):null,dMonthLabel:first?.monthLabel,dNetPNL:first?.netPNL},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
     return data.slice(-6).map(d => ({
       value: Math.abs(d.netPNL),
       label: d.monthLabel,
-      frontColor: d.netPNL >= 0 ? themeColors.success : themeColors.danger,
+      frontColor: d.netPNL >= 0 ? themeColors.win : themeColors.loss,
     }));
   }, [filteredTrades, themeColors]);
 
@@ -141,7 +130,13 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
+      <Header
+        onDateFilter={() => setShowDateFilter(true)}
+        onTagFilter={() => setShowTagFilter(true)}
+        onThemeToggle={toggleTheme}
+        onAccountPress={() => setShowAccountModal(true)}
+      />
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -150,95 +145,61 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={themeColors.primary}
+            tintColor={themeColors.accentGold}
           />
         }
       >
-        {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={[styles.title, { color: themeColors.text }]}>Dashboard</Text>
-            <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
-              {selectedAccount?.name || 'No account'} • {filteredTrades.length} trades
-            </Text>
-          </View>
+          <Text style={[styles.title, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>
+            Dashboard
+          </Text>
+          <Text style={[styles.subtitle, { color: themeColors.textMuted, fontFamily: themeColors.fontMono }]}>
+            {selectedAccount?.name || 'No account'} • {filteredTrades.length} trades
+          </Text>
         </View>
 
-        {/* Filter Buttons */}
         <View style={styles.filterRow}>
           <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+            style={[styles.filterButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
             onPress={() => setShowDateFilter(true)}
           >
-            <Text style={[styles.filterButtonText, { color: themeColors.text }]}>
-              📅 {filterLabel || 'All Time'}
+            <Text style={[styles.filterButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
+              {filterLabel || 'All Time'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+            style={[styles.filterButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
             onPress={() => setShowTagFilter(true)}
           >
-            <Text style={[styles.filterButtonText, { color: themeColors.text }]}>
-              🏷️ {selectedTagIds.length > 0 ? `${selectedTagIds.length} tags` : 'All Tags'}
+            <Text style={[styles.filterButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
+              {selectedTagIds.length > 0 ? `${selectedTagIds.length} tags` : 'All Tags'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Metrics Grid */}
         <View style={styles.metricsGrid}>
-          <MetricsCard
-            title="Current Balance"
-            value={formatCurrency(metrics.currentBalance)}
-            isPositive={metrics.currentBalance >= startingBalance}
-            isDark={isDark}
-          />
-          <MetricsCard
-            title="Net Profit"
-            value={formatCurrency(metrics.totalProfit)}
-            isPositive={metrics.totalProfit >= 0}
-            isDark={isDark}
-          />
-          <MetricsCard
-            title="Win Rate"
-            value={`${metrics.winRate.toFixed(1)}%`}
-            subtitle={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
-            isPositive={metrics.winRate >= 50}
-            isDark={isDark}
-          />
-          <MetricsCard
-            title="Total Trades"
-            value={metrics.totalTrades.toString()}
-            isDark={isDark}
-          />
-          <MetricsCard
-            title="Avg Win"
-            value={formatCurrency(metrics.avgWin)}
-            isPositive={true}
-            isDark={isDark}
-          />
-          <MetricsCard
-            title="Avg Loss"
-            value={formatCurrency(metrics.avgLoss)}
-            isPositive={false}
-            isDark={isDark}
-          />
+          <MetricsCard label="Current Balance" value={formatCurrency(metrics.currentBalance)} valueColor={metrics.currentBalance >= startingBalance ? themeColors.win : themeColors.loss} colors={themeColors} />
+          <MetricsCard label="Net Profit" value={formatCurrency(metrics.totalProfit)} valueColor={metrics.totalProfit >= 0 ? themeColors.win : themeColors.loss} colors={themeColors} />
+          <MetricsCard label="Win Rate" value={`${metrics.winRate.toFixed(1)}%`} valueColor={metrics.winRate >= 50 ? themeColors.win : themeColors.loss} colors={themeColors} />
+          <MetricsCard label="Total Trades" value={metrics.totalTrades.toString()} colors={themeColors} />
+          <MetricsCard label="Avg Win" value={formatCurrency(metrics.avgWin)} valueColor={themeColors.win} colors={themeColors} />
+          <MetricsCard label="Avg Loss" value={formatCurrency(metrics.avgLoss)} valueColor={themeColors.loss} colors={themeColors} />
         </View>
 
-        {/* Account Balance Chart */}
         {balanceChartData.length > 0 && (
-          <View style={[styles.chartCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-            <Text style={[styles.chartTitle, { color: themeColors.text }]}>Account Balance</Text>
+          <LuxeCard style={styles.chartCard}>
+            <Text style={[styles.chartTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>Account Balance</Text>
             <LineChart
               data={balanceChartData}
               width={screenWidth - 80}
               height={180}
-              color={themeColors.primary}
+              color={themeColors.accentGold}
               thickness={2}
               hideDataPoints
               curved
               areaChart
-              startFillColor={themeColors.primary + '40'}
-              endFillColor={themeColors.primary + '00'}
+              startFillColor={themeColors.accentGold + '40'}
+              endFillColor={themeColors.accentGold + '00'}
               backgroundColor="transparent"
               yAxisColor="transparent"
               xAxisColor={themeColors.border}
@@ -249,13 +210,12 @@ export default function DashboardScreen() {
               endSpacing={10}
               adjustToWidth
             />
-          </View>
+          </LuxeCard>
         )}
 
-        {/* Win Rate Pie Chart */}
         {winLossPieData.length > 0 && (
-          <View style={[styles.chartCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-            <Text style={[styles.chartTitle, { color: themeColors.text }]}>Win Rate</Text>
+          <LuxeCard style={styles.chartCard}>
+            <Text style={[styles.chartTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>Win Rate</Text>
             <View style={styles.pieContainer}>
               <PieChart
                 data={winLossPieData}
@@ -264,7 +224,7 @@ export default function DashboardScreen() {
                 radius={70}
                 centerLabelComponent={() => (
                   <View style={styles.pieCenter}>
-                    <Text style={[styles.pieCenterValue, { color: themeColors.text }]}>
+                    <Text style={[styles.pieCenterValue, { color: themeColors.textPrimary }]}>
                       {metrics.winRate.toFixed(0)}%
                     </Text>
                     <Text style={[styles.pieCenterLabel, { color: themeColors.textSecondary }]}>
@@ -275,26 +235,25 @@ export default function DashboardScreen() {
               />
               <View style={styles.pieLegend}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: themeColors.success }]} />
-                  <Text style={[styles.legendText, { color: themeColors.text }]}>
+                  <View style={[styles.legendDot, { backgroundColor: themeColors.win }]} />
+                  <Text style={[styles.legendText, { color: themeColors.textPrimary }]}>
                     Wins: {metrics.winningTrades}
                   </Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: isDark ? '#374151' : '#E5E7EB' }]} />
-                  <Text style={[styles.legendText, { color: themeColors.text }]}>
+                  <View style={[styles.legendDot, { backgroundColor: themeColors.loss }]} />
+                  <Text style={[styles.legendText, { color: themeColors.textPrimary }]}>
                     Losses: {metrics.losingTrades}
                   </Text>
                 </View>
               </View>
             </View>
-          </View>
+          </LuxeCard>
         )}
 
-        {/* Monthly P&L Bar Chart */}
         {monthlyPnlData.length > 0 && (
-          <View style={[styles.chartCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-            <Text style={[styles.chartTitle, { color: themeColors.text }]}>Monthly P&L</Text>
+          <LuxeCard style={styles.chartCard}>
+            <Text style={[styles.chartTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>Monthly P&L</Text>
             <BarChart
               data={monthlyPnlData}
               width={screenWidth - 100}
@@ -312,22 +271,21 @@ export default function DashboardScreen() {
               noOfSections={4}
               backgroundColor="transparent"
             />
-          </View>
+          </LuxeCard>
         )}
 
-        {/* Empty state for charts */}
         {filteredTrades.length === 0 && (
-          <View style={[styles.chartCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <LuxeCard style={styles.chartCard}>
             <Text style={[styles.emptyChartText, { color: themeColors.textSecondary }]}>
               Add trades to see your charts
             </Text>
-          </View>
+          </LuxeCard>
         )}
       </ScrollView>
 
-      {/* Filter Modals */}
       <DateFilterModal visible={showDateFilter} onClose={() => setShowDateFilter(false)} />
       <TagFilterModal visible={showTagFilter} onClose={() => setShowTagFilter(false)} />
+      <AccountSelectorModal visible={showAccountModal} onClose={() => setShowAccountModal(false)} />
     </SafeAreaView>
   );
 }
@@ -369,71 +327,52 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   header: {
-    paddingVertical: 24,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '500',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     marginTop: 4,
   },
   filterRow: {
     flexDirection: 'row',
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.sm,
   },
   filterButton: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   filterButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '500',
   },
   metricsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginHorizontal: -6,
+    paddingHorizontal: SPACING.md,
   },
   card: {
     width: '47%',
     marginHorizontal: '1.5%',
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  cardTitle: {
-    fontSize: 12,
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  cardValue: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    marginTop: 4,
+    marginBottom: SPACING.sm,
+    padding: SPACING.md,
   },
   chartCard: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    marginTop: SPACING.md,
+    marginHorizontal: SPACING.md,
+    padding: SPACING.md,
     overflow: 'hidden',
   },
   chartTitle: {

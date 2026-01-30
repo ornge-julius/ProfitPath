@@ -1,46 +1,27 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, colors } from '../context/ThemeContext';
 
-// Import screens
 import DashboardScreen from '../screens/DashboardScreen';
 import TradeHistoryScreen from '../screens/TradeHistoryScreen';
 import AddTradeScreen from '../screens/AddTradeScreen';
+import TagsScreen from '../screens/TagsScreen';
+import ComparisonScreen from '../screens/ComparisonScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import TradeDetailScreen from '../screens/TradeDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-// Simple icon components
-const DashboardIcon = ({ color }) => (
-  <View style={styles.icon}>
-    <Text style={styles.iconText}>📊</Text>
-  </View>
-);
-
-const HistoryIcon = ({ color }) => (
-  <View style={styles.icon}>
-    <Text style={styles.iconText}>📜</Text>
-  </View>
-);
-
-const AddIcon = ({ color }) => (
-  <View style={[styles.addIcon, { borderColor: color }]}>
-    <Text style={[styles.addIconText, { color }]}>+</Text>
-  </View>
-);
-
-const SettingsIcon = ({ color }) => (
-  <View style={styles.icon}>
-    <Text style={styles.iconText}>⚙️</Text>
-  </View>
-);
+function TabIcon({ name, focused, color, size = 24 }) {
+  return <Ionicons name={name} size={size} color={color} />;
+}
 
 /**
- * Bottom tab navigator with main app screens.
+ * Bottom tab navigator: Dashboard, History, New Trade, Tags, Compare.
+ * Active tab uses gold (accent); tab bar uses Luxe surface/border.
  */
 function TabNavigator() {
   const { isDark } = useTheme();
@@ -51,16 +32,16 @@ function TabNavigator() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: themeColors.surface,
+          backgroundColor: themeColors.bgCard ?? themeColors.surface,
           borderTopColor: themeColors.border,
           paddingBottom: 8,
           paddingTop: 8,
           height: 80,
         },
-        tabBarActiveTintColor: themeColors.primary,
+        tabBarActiveTintColor: themeColors.accentGold ?? themeColors.primary,
         tabBarInactiveTintColor: themeColors.textMuted,
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '500',
           marginTop: 4,
         },
@@ -70,31 +51,59 @@ function TabNavigator() {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarIcon: ({ color }) => <DashboardIcon color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'bar-chart' : 'bar-chart-outline'} color={color} />
+          ),
           tabBarLabel: 'Dashboard',
-        }}
-      />
-      <Tab.Screen
-        name="AddTrade"
-        component={AddTradeScreen}
-        options={{
-          tabBarIcon: ({ color }) => <AddIcon color={color} />,
-          tabBarLabel: 'Add Trade',
         }}
       />
       <Tab.Screen
         name="History"
         component={TradeHistoryScreen}
         options={{
-          tabBarIcon: ({ color }) => <HistoryIcon color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'time' : 'time-outline'} color={color} />
+          ),
           tabBarLabel: 'History',
+        }}
+      />
+      <Tab.Screen
+        name="NewTrade"
+        component={AddTradeScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="add-circle" color={color} size={28} />
+          ),
+          tabBarLabel: 'New Trade',
+        }}
+      />
+      <Tab.Screen
+        name="Tags"
+        component={TagsScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'pricetags' : 'pricetags-outline'} color={color} />
+          ),
+          tabBarLabel: 'Tags',
+        }}
+      />
+      <Tab.Screen
+        name="Compare"
+        component={ComparisonScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'git-compare' : 'git-compare-outline'} color={color} />
+          ),
+          tabBarLabel: 'Compare',
         }}
       />
       <Tab.Screen
         name="Settings"
         component={SettingsScreen}
         options={{
-          tabBarIcon: ({ color }) => <SettingsIcon color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'settings' : 'settings-outline'} color={color} />
+          ),
           tabBarLabel: 'Settings',
         }}
       />
@@ -103,7 +112,7 @@ function TabNavigator() {
 }
 
 /**
- * Main stack navigator that includes tabs and modal screens.
+ * Main stack: tabs + TradeDetail. TradeDetail keeps stack header for back.
  */
 export default function MainNavigator() {
   const { isDark } = useTheme();
@@ -133,30 +142,3 @@ export default function MainNavigator() {
     </Stack.Navigator>
   );
 }
-
-const styles = StyleSheet.create({
-  icon: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 4,
-  },
-  iconText: {
-    fontSize: 18,
-  },
-  addIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  addIconText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    lineHeight: 26,
-  },
-});

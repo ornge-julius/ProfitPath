@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { Appearance, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { storageJson } from '../utils/storage';
+import { LUXE_LIGHT, LUXE_DARK } from '../theme/tokens';
 
 const STORAGE_KEY = 'profitpath_theme';
 
-// Theme constants
 export const THEMES = {
   LIGHT: 'light',
   DARK: 'dark',
@@ -18,17 +18,15 @@ export const ThemeProvider = ({ children }) => {
   const [themePreference, setThemePreference] = useState(THEMES.SYSTEM);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Compute actual theme based on preference and system setting
   const theme = useMemo(() => {
     if (themePreference === THEMES.SYSTEM) {
-      return systemColorScheme || THEMES.DARK;
+      return systemColorScheme === 'dark' ? THEMES.DARK : THEMES.LIGHT;
     }
     return themePreference;
   }, [themePreference, systemColorScheme]);
 
   const isDark = theme === THEMES.DARK;
 
-  // Async initialization
   useEffect(() => {
     const loadPersistedTheme = async () => {
       try {
@@ -45,21 +43,18 @@ export const ThemeProvider = ({ children }) => {
     loadPersistedTheme();
   }, []);
 
-  // Async persistence
   useEffect(() => {
     if (!isLoading) {
       storageJson.set(STORAGE_KEY, themePreference).catch(() => {});
     }
   }, [themePreference, isLoading]);
 
-  // Setter
   const setTheme = useCallback((newTheme) => {
     if (Object.values(THEMES).includes(newTheme)) {
       setThemePreference(newTheme);
     }
   }, []);
 
-  // Toggle between light/dark (ignoring system)
   const toggleTheme = useCallback(() => {
     setThemePreference(prev => {
       if (prev === THEMES.DARK || (prev === THEMES.SYSTEM && isDark)) {
@@ -69,7 +64,6 @@ export const ThemeProvider = ({ children }) => {
     });
   }, [isDark]);
 
-  // Memoize context value
   const value = useMemo(() => ({
     theme,
     themePreference,
@@ -77,7 +71,8 @@ export const ThemeProvider = ({ children }) => {
     isLoading,
     setTheme,
     toggleTheme,
-    THEMES
+    THEMES,
+    colors: isDark ? LUXE_DARK : LUXE_LIGHT,
   }), [theme, themePreference, isDark, isLoading, setTheme, toggleTheme]);
 
   return (
@@ -95,28 +90,8 @@ export const useTheme = () => {
   return context;
 };
 
-// Theme colors for easy access
+// Theme colors — Monochrome Luxe (semantic names). Use themeColors from useTheme() in components.
 export const colors = {
-  light: {
-    background: '#F9FAFB',
-    surface: '#FFFFFF',
-    text: '#111827',
-    textSecondary: '#6B7280',
-    textMuted: '#9CA3AF',
-    border: '#E5E7EB',
-    primary: '#10B981',
-    danger: '#EF4444',
-    success: '#10B981'
-  },
-  dark: {
-    background: '#0A0A0B',
-    surface: '#111113',
-    text: '#F9FAFB',
-    textSecondary: '#9CA3AF',
-    textMuted: '#6B7280',
-    border: '#1F2937',
-    primary: '#10B981',
-    danger: '#EF4444',
-    success: '#10B981'
-  }
+  light: LUXE_LIGHT,
+  dark: LUXE_DARK,
 };

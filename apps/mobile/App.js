@@ -1,5 +1,7 @@
 import React from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useFonts } from 'expo-font';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
@@ -11,6 +13,10 @@ import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { DateFilterProvider } from './src/context/DateFilterContext';
 import { TagFilterProvider } from './src/context/TagFilterContext';
 import { AppStateProvider } from './src/context/AppStateContext';
+
+// Theme & Fonts
+import { luxeFonts } from './src/theme/fonts';
+import { LUXE_DARK } from './src/theme/tokens';
 
 // Navigation
 import RootNavigator from './src/navigation/RootNavigator';
@@ -34,7 +40,23 @@ function StatusBarWrapper() {
   return <StatusBar style={isDark ? 'light' : 'dark'} />;
 }
 
+// Splash shown while fonts load
+function FontLoadingSplash() {
+  return (
+    <View style={[styles.loadingContainer, { backgroundColor: LUXE_DARK.bgPrimary }]}>
+      <Text style={[styles.loadingLogo, { color: LUXE_DARK.accentGold }]}>ProfitPath</Text>
+      <ActivityIndicator size="large" color={LUXE_DARK.accentGold} style={styles.spinner} />
+    </View>
+  );
+}
+
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts(luxeFonts);
+
+  if (!fontsLoaded && !fontError) {
+    return <FontLoadingSplash />;
+  }
+
   return (
     <SupabaseProvider client={supabase}>
       <ThemeProvider>
@@ -50,3 +72,18 @@ export default function App() {
     </SupabaseProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingLogo: {
+    fontSize: 36,
+    letterSpacing: -1,
+  },
+  spinner: {
+    marginTop: 24,
+  },
+});

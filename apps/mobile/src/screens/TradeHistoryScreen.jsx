@@ -6,10 +6,13 @@ import { useDateFilter, filterTradesByExitDate } from '../context/DateFilterCont
 import { useTagFilter, filterTradesByTags } from '../context/TagFilterContext';
 import { useAppStateContext } from '../context/AppStateContext';
 import { useAuth, useTradeManagement, formatDate, getResultText, isWin, getTradeTypeText } from '@profitpath/shared';
+import DateFilterModal from '../components/DateFilterModal';
+import TagFilterModal from '../components/TagFilterModal';
+import AccountSelectorModal from '../components/AccountSelectorModal';
+import Header from '../components/Header';
 
 // Trade Row Component with swipe to delete
-const TradeRow = ({ trade, isDark, onPress, onDelete }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
+const TradeRow = ({ trade, themeColors, onPress, onDelete }) => {
   const isWinning = isWin(trade.result) || trade.profit > 0;
   
   const formatCurrency = (value) => {
@@ -44,14 +47,14 @@ const TradeRow = ({ trade, isDark, onPress, onDelete }) => {
       >
         <View style={styles.tradeLeft}>
           <View style={styles.tradeHeader}>
-            <Text style={[styles.symbol, { color: themeColors.text }]}>{trade.symbol}</Text>
+            <Text style={[styles.symbol, { color: themeColors.textPrimary }]}>{trade.symbol}</Text>
             <View style={[
               styles.typeBadge,
-              { backgroundColor: trade.position_type === 1 ? '#10B98120' : '#EF444420' }
+              { backgroundColor: trade.position_type === 1 ? (themeColors.winBg || themeColors.win + '20') : (themeColors.lossBg || themeColors.loss + '20') }
             ]}>
               <Text style={[
                 styles.typeText,
-                { color: trade.position_type === 1 ? themeColors.success : themeColors.danger }
+                { color: trade.position_type === 1 ? themeColors.win : themeColors.loss }
               ]}>
                 {getTradeTypeText(trade.position_type)}
               </Text>
@@ -65,13 +68,13 @@ const TradeRow = ({ trade, isDark, onPress, onDelete }) => {
         <View style={styles.tradeRight}>
           <Text style={[
             styles.profit,
-            { color: isWinning ? themeColors.success : themeColors.danger }
+            { color: isWinning ? themeColors.win : themeColors.loss }
           ]}>
             {formatCurrency(trade.profit)}
           </Text>
           <Text style={[
             styles.resultBadge,
-            { color: isWinning ? themeColors.success : themeColors.danger }
+            { color: isWinning ? themeColors.win : themeColors.loss }
           ]}>
             {getResultText(trade.result)}
           </Text>
@@ -82,8 +85,7 @@ const TradeRow = ({ trade, isDark, onPress, onDelete }) => {
 };
 
 export default function TradeHistoryScreen({ navigation }) {
-  const { isDark, isLoading: themeLoading } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors, isLoading: themeLoading, toggleTheme } = useTheme();
   
   const { user, isLoading: authLoading } = useAuth();
   const { filter, isLoading: dateFilterLoading } = useDateFilter();
@@ -93,6 +95,9 @@ export default function TradeHistoryScreen({ navigation }) {
   const { trades, isLoading: tradesLoading, deleteTrade, refreshTrades } = useTradeManagement(selectedAccountId);
 
   const [refreshing, setRefreshing] = useState(false);
+  const [showDateFilter, setShowDateFilter] = useState(false);
+  const [showTagFilter, setShowTagFilter] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
 
   // Apply filters
   const filteredTrades = useMemo(() => {
@@ -140,9 +145,9 @@ export default function TradeHistoryScreen({ navigation }) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.accentGold} />
           <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -151,9 +156,9 @@ export default function TradeHistoryScreen({ navigation }) {
 
   if (!user) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyTitle, { color: themeColors.text }]}>Trade History</Text>
+          <Text style={[styles.emptyTitle, { color: themeColors.textPrimary }]}>Trade History</Text>
           <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>
             Sign in to view your trades
           </Text>
@@ -164,23 +169,27 @@ export default function TradeHistoryScreen({ navigation }) {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
-        {/* Header */}
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
+        <Header
+          onDateFilter={() => setShowDateFilter(true)}
+          onTagFilter={() => setShowTagFilter(true)}
+          onThemeToggle={toggleTheme}
+          onAccountPress={() => setShowAccountModal(true)}
+        />
         <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
-          <Text style={[styles.title, { color: themeColors.text }]}>Trade History</Text>
+          <Text style={[styles.title, { color: themeColors.textPrimary }]}>Trade History</Text>
           <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
             {selectedAccount?.name || 'No account'} • {filteredTrades.length} trades
           </Text>
         </View>
 
-        {/* Trade List */}
         <FlatList
           data={filteredTrades}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <TradeRow 
               trade={item} 
-              isDark={isDark} 
+              themeColors={themeColors}
               onPress={handleTradePress}
               onDelete={handleDeleteTrade}
             />
@@ -191,7 +200,7 @@ export default function TradeHistoryScreen({ navigation }) {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={themeColors.primary}
+              tintColor={themeColors.accentGold}
             />
           }
           ListEmptyComponent={
@@ -202,6 +211,9 @@ export default function TradeHistoryScreen({ navigation }) {
             </View>
           }
         />
+        <DateFilterModal visible={showDateFilter} onClose={() => setShowDateFilter(false)} />
+        <TagFilterModal visible={showTagFilter} onClose={() => setShowTagFilter(false)} />
+        <AccountSelectorModal visible={showAccountModal} onClose={() => setShowAccountModal(false)} />
       </SafeAreaView>
     </GestureHandlerRootView>
   );
