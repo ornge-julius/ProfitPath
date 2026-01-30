@@ -1,0 +1,7 @@
+{
+  "buildCommand": "npm run build --workspace=apps/web",
+  "outputDirectory": "apps/web/build",
+  "installCommand": "npm install",
+  "framework": "create-react-app",
+  "ignoreCommand": "git rev-parse --verify HEAD^ >/dev/null 2>&1 && git diff --quiet HEAD^ HEAD -- apps/web packages/shared"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "profitpath",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build:web": "npm run build --workspace=apps/web",
+    "start:web": "npm run start --workspace=apps/web",
+    "build:mobile": "cd apps/mobile && npx expo export"
+  }
+}

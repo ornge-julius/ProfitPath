@@ -1,8 +1,14 @@
 import { useReducer, useCallback, useEffect, useRef } from 'react';
-import { accountsReducer, ACCOUNTS_ACTIONS, initialAccountsState } from '../reducers/accountsReducer';
-import { usersReducer, USERS_ACTIONS, initialUsersState } from '../reducers/usersReducer';
-import { supabase } from '../supabaseClient';
-import { useAuth } from './useAuth';
+import { 
+  accountsReducer, 
+  ACCOUNTS_ACTIONS, 
+  initialAccountsState,
+  usersReducer, 
+  USERS_ACTIONS, 
+  initialUsersState,
+  useSupabase,
+  useAuth 
+} from '@profitpath/shared';
 import { useDemoMode } from '../context/DemoModeContext';
 
 const initializeAccountsState = () => {
@@ -25,6 +31,7 @@ const initializeAccountsState = () => {
 };
 
 export const useAppState = () => {
+  const supabase = useSupabase();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { isDemoMode, demoAuthUserId } = useDemoMode();
   const [accountsState, accountsDispatch] = useReducer(accountsReducer, initialAccountsState, initializeAccountsState);
@@ -168,7 +175,7 @@ export const useAppState = () => {
       // Rollback the optimistic update
       accountsDispatch({ type: ACCOUNTS_ACTIONS.UPDATE_STARTING_BALANCE, payload: previousBalance });
     }
-  }, [accountsState.selectedAccountId, accountsState.accounts]);
+  }, [accountsState.selectedAccountId, accountsState.accounts, supabase]);
 
   const toggleBalanceForm = useCallback(() => {
     accountsDispatch({ type: ACCOUNTS_ACTIONS.TOGGLE_BALANCE_FORM });
@@ -224,7 +231,7 @@ export const useAppState = () => {
     } catch (err) {
       throw err;
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, supabase]);
 
   const updateAccount = useCallback(async (accountData) => {
     // Don't allow updating accounts if user is not authenticated
@@ -273,7 +280,7 @@ export const useAppState = () => {
     } catch (err) {
       throw err;
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, supabase]);
 
   const deleteAccount = useCallback(async (accountId) => {
     // Don't allow deleting accounts if user is not authenticated
@@ -302,7 +309,7 @@ export const useAppState = () => {
     } catch (err) {
       throw err;
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, supabase]);
 
   const selectAccount = useCallback((accountId) => {
     accountsDispatch({ type: ACCOUNTS_ACTIONS.SET_SELECTED_ACCOUNT, payload: accountId });
