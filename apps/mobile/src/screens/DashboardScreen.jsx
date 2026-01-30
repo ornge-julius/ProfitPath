@@ -103,10 +103,14 @@ export default function DashboardScreen() {
   const monthlyPnlData = useMemo(() => {
     if (!filteredTrades.length) return [];
     const data = generateMonthlyNetPNLData(filteredTrades);
+    // #region agent log
+    const first = data && data[0];
+    fetch('http://127.0.0.1:7242/ingest/37fdad3c-5161-43bf-8099-15b2afc5b182',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DashboardScreen.jsx:monthlyPnlData',message:'monthly data shape',data:{dataLength:data?.length,firstKeys:first?Object.keys(first):null,dMonthLabel:first?.monthLabel,dNetPNL:first?.netPNL},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     return data.slice(-6).map(d => ({
-      value: Math.abs(d.netPnl),
-      label: d.month.slice(0, 3),
-      frontColor: d.netPnl >= 0 ? themeColors.success : themeColors.danger,
+      value: Math.abs(d.netPNL),
+      label: d.monthLabel,
+      frontColor: d.netPNL >= 0 ? themeColors.success : themeColors.danger,
     }));
   }, [filteredTrades, themeColors]);
 

@@ -59,7 +59,7 @@ export const TagFilterProvider = ({ children }) => {
         const { data, error } = await supabase
           .from('tags')
           .select('*')
-          .eq('auth_user_id', user.id)
+          .eq('user_id', user.id)
           .order('name', { ascending: true });
 
         if (error) {
