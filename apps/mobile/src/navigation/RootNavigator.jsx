@@ -16,8 +16,8 @@ function LoadingScreen() {
   return (
     <View style={[styles.loadingContainer, { backgroundColor: colors.bgPrimary }]}>
       <View style={styles.logoRow}>
-        <Text style={[styles.logoProfit, { color: colors.textPrimary }]}>Profit</Text>
-        <Text style={[styles.logoPath, { color: colors.accentGold }]}>Path</Text>
+        <Text style={[styles.logoProfit, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>Profit</Text>
+        <Text style={[styles.logoPath, { color: colors.accentGold, fontFamily: colors.fontDisplay }]}>Path</Text>
       </View>
       <ActivityIndicator size="large" color={colors.accentGold} style={styles.spinner} />
     </View>

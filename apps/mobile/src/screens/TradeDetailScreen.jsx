@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   TextInput,
 } from 'react-native';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAppStateContext } from '../context/AppStateContext';
 import {
   useTradeManagement,
@@ -21,22 +21,16 @@ import {
   calculateReturnPercentage,
 } from '@profitpath/shared';
 
-// Detail Row Component
-const DetailRow = ({ label, value, valueColor, isDark }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-
-  return (
-    <View style={[styles.detailRow, { borderBottomColor: themeColors.border }]}>
-      <Text style={[styles.detailLabel, { color: themeColors.textSecondary }]}>{label}</Text>
-      <Text style={[styles.detailValue, { color: valueColor || themeColors.text }]}>{value}</Text>
-    </View>
-  );
-};
+const DetailRow = ({ label, value, valueColor, themeColors }) => (
+  <View style={[styles.detailRow, { borderBottomColor: themeColors.border }]}>
+    <Text style={[styles.detailLabel, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>{label}</Text>
+    <Text style={[styles.detailValue, { color: valueColor || themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>{value}</Text>
+  </View>
+);
 
 export default function TradeDetailScreen({ route, navigation }) {
   const { tradeId } = route.params;
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors } = useTheme();
   const { selectedAccountId } = useAppStateContext();
   const { trades, updateTrade, deleteTrade, isLoading } = useTradeManagement(selectedAccountId);
 
@@ -97,82 +91,62 @@ export default function TradeDetailScreen({ route, navigation }) {
 
   if (isLoading || !trade) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={themeColors.primary} />
+          <ActivityIndicator size="large" color={themeColors.accentGold} />
         </View>
       </SafeAreaView>
     );
   }
 
   const isWinning = isWin(trade.result) || trade.profit > 0;
-  const profitColor = isWinning ? themeColors.success : themeColors.danger;
+  const profitColor = isWinning ? themeColors.win : themeColors.loss;
   const returnPct = calculateReturnPercentage(trade.entry_price, trade.exit_price, trade.quantity);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Trade Header */}
-        <View style={[styles.header, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+        <View style={[styles.header, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}>
           <View style={styles.headerTop}>
-            <Text style={[styles.symbol, { color: themeColors.text }]}>{trade.symbol}</Text>
-            <View
-              style={[
-                styles.typeBadge,
-                { backgroundColor: trade.position_type === 1 ? '#10B98120' : '#EF444420' },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.typeText,
-                  { color: trade.position_type === 1 ? themeColors.success : themeColors.danger },
-                ]}
-              >
+            <Text style={[styles.symbol, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>{trade.symbol}</Text>
+            <View style={[styles.typeBadge, { backgroundColor: trade.position_type === 1 ? themeColors.winBg : themeColors.lossBg }]}>
+              <Text style={[styles.typeText, { color: trade.position_type === 1 ? themeColors.win : themeColors.loss, fontFamily: themeColors.fontMono }]}>
                 {getTradeTypeText(trade.position_type)}
               </Text>
             </View>
           </View>
-          <Text style={[styles.profit, { color: profitColor }]}>{formatCurrency(trade.profit)}</Text>
-          <Text style={[styles.resultText, { color: profitColor }]}>
+          <Text style={[styles.profit, { color: profitColor, fontFamily: themeColors.fontDisplay }]}>{formatCurrency(trade.profit)}</Text>
+          <Text style={[styles.resultText, { color: profitColor, fontFamily: themeColors.fontMono }]}>
             {getResultText(trade.result)} • {returnPct.toFixed(1)}% return
           </Text>
         </View>
 
-        {/* Trade Details */}
-        <View style={[styles.section, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>Trade Details</Text>
-          <DetailRow label="Entry Price" value={formatCurrency(trade.entry_price)} isDark={isDark} />
-          <DetailRow label="Exit Price" value={formatCurrency(trade.exit_price)} isDark={isDark} />
-          <DetailRow label="Quantity" value={`${trade.quantity} contract${trade.quantity !== 1 ? 's' : ''}`} isDark={isDark} />
-          <DetailRow label="Entry Date" value={formatDate(trade.entry_date)} isDark={isDark} />
-          <DetailRow label="Exit Date" value={formatDate(trade.exit_date)} isDark={isDark} />
+        <View style={[styles.section, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Trade Details</Text>
+          <DetailRow label="Entry Price" value={formatCurrency(trade.entry_price)} themeColors={themeColors} />
+          <DetailRow label="Exit Price" value={formatCurrency(trade.exit_price)} themeColors={themeColors} />
+          <DetailRow label="Quantity" value={`${trade.quantity} contract${trade.quantity !== 1 ? 's' : ''}`} themeColors={themeColors} />
+          <DetailRow label="Entry Date" value={formatDate(trade.entry_date)} themeColors={themeColors} />
+          <DetailRow label="Exit Date" value={formatDate(trade.exit_date)} themeColors={themeColors} />
         </View>
 
-        {/* Notes Section */}
-        <View style={[styles.section, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+        <View style={[styles.section, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>Notes</Text>
+            <Text style={[styles.sectionTitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Notes</Text>
             {!isEditing && (
               <TouchableOpacity onPress={() => setIsEditing(true)}>
-                <Text style={[styles.editButton, { color: themeColors.primary }]}>Edit</Text>
+                <Text style={[styles.editButton, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>Edit</Text>
               </TouchableOpacity>
             )}
           </View>
           {isEditing ? (
             <View>
               <TextInput
-                style={[
-                  styles.notesInput,
-                  {
-                    backgroundColor: themeColors.background,
-                    borderColor: themeColors.border,
-                    color: themeColors.text,
-                  },
-                ]}
+                style={[styles.notesInput, { backgroundColor: themeColors.bgPrimary, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
                 value={editNotes}
                 onChangeText={setEditNotes}
                 placeholder="Add notes about this trade..."
@@ -181,41 +155,26 @@ export default function TradeDetailScreen({ route, navigation }) {
                 numberOfLines={4}
               />
               <View style={styles.editActions}>
-                <TouchableOpacity
-                  style={[styles.cancelButton, { borderColor: themeColors.border }]}
-                  onPress={() => {
-                    setIsEditing(false);
-                    setEditNotes(trade.notes || '');
-                  }}
-                >
-                  <Text style={[styles.cancelButtonText, { color: themeColors.text }]}>Cancel</Text>
+                <TouchableOpacity style={[styles.cancelButton, { borderColor: themeColors.border }]} onPress={() => { setIsEditing(false); setEditNotes(trade.notes || ''); }}>
+                  <Text style={[styles.cancelButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>Cancel</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.saveButton, { backgroundColor: themeColors.primary }]}
-                  onPress={handleSaveNotes}
-                >
-                  <Text style={styles.saveButtonText}>Save</Text>
+                <TouchableOpacity style={[styles.saveButton, { backgroundColor: themeColors.accentGold }]} onPress={handleSaveNotes}>
+                  <Text style={[styles.saveButtonText, { fontFamily: themeColors.fontMono }]}>Save</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            <Text style={[styles.notesText, { color: trade.notes ? themeColors.text : themeColors.textMuted }]}>
+            <Text style={[styles.notesText, { color: trade.notes ? themeColors.textPrimary : themeColors.textMuted, fontFamily: themeColors.fontMono }]}>
               {trade.notes || 'No notes for this trade'}
             </Text>
           )}
         </View>
 
-        {/* Delete Button */}
-        <TouchableOpacity
-          style={[styles.deleteButton, { borderColor: themeColors.danger }]}
-          onPress={handleDelete}
-          disabled={isDeleting}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={[styles.deleteButton, { borderColor: themeColors.loss }]} onPress={handleDelete} disabled={isDeleting} activeOpacity={0.7}>
           {isDeleting ? (
-            <ActivityIndicator color={themeColors.danger} />
+            <ActivityIndicator color={themeColors.loss} />
           ) : (
-            <Text style={[styles.deleteButtonText, { color: themeColors.danger }]}>Delete Trade</Text>
+            <Text style={[styles.deleteButtonText, { color: themeColors.loss, fontFamily: themeColors.fontMono }]}>Delete Trade</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

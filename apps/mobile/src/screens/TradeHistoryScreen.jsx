@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useDateFilter, filterTradesByExitDate } from '../context/DateFilterContext';
 import { useTagFilter, filterTradesByTags } from '../context/TagFilterContext';
 import { useAppStateContext } from '../context/AppStateContext';
@@ -31,7 +31,7 @@ const TradeRow = ({ trade, themeColors, onPress, onDelete }) => {
       style={styles.deleteAction}
       onPress={() => onDelete?.(trade.id)}
     >
-      <Text style={styles.deleteActionText}>Delete</Text>
+      <Text style={[styles.deleteActionText, { fontFamily: themeColors.fontMono }]}>Delete</Text>
     </TouchableOpacity>
   );
 
@@ -47,20 +47,20 @@ const TradeRow = ({ trade, themeColors, onPress, onDelete }) => {
       >
         <View style={styles.tradeLeft}>
           <View style={styles.tradeHeader}>
-            <Text style={[styles.symbol, { color: themeColors.textPrimary }]}>{trade.symbol}</Text>
+            <Text style={[styles.symbol, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>{trade.symbol}</Text>
             <View style={[
               styles.typeBadge,
               { backgroundColor: trade.position_type === 1 ? (themeColors.winBg || themeColors.win + '20') : (themeColors.lossBg || themeColors.loss + '20') }
             ]}>
               <Text style={[
                 styles.typeText,
-                { color: trade.position_type === 1 ? themeColors.win : themeColors.loss }
+                { color: trade.position_type === 1 ? themeColors.win : themeColors.loss, fontFamily: themeColors.fontMono }
               ]}>
                 {getTradeTypeText(trade.position_type)}
               </Text>
             </View>
           </View>
-          <Text style={[styles.tradeDate, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.tradeDate, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             {formatDate(trade.exit_date)}
           </Text>
         </View>
@@ -68,13 +68,13 @@ const TradeRow = ({ trade, themeColors, onPress, onDelete }) => {
         <View style={styles.tradeRight}>
           <Text style={[
             styles.profit,
-            { color: isWinning ? themeColors.win : themeColors.loss }
+            { color: isWinning ? themeColors.win : themeColors.loss, fontFamily: themeColors.fontMono }
           ]}>
             {formatCurrency(trade.profit)}
           </Text>
           <Text style={[
             styles.resultBadge,
-            { color: isWinning ? themeColors.win : themeColors.loss }
+            { color: isWinning ? themeColors.win : themeColors.loss, fontFamily: themeColors.fontMono }
           ]}>
             {getResultText(trade.result)}
           </Text>
@@ -148,7 +148,7 @@ export default function TradeHistoryScreen({ navigation }) {
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColors.accentGold} />
-          <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>Loading...</Text>
+          <Text style={[styles.loadingText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -158,8 +158,8 @@ export default function TradeHistoryScreen({ navigation }) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyTitle, { color: themeColors.textPrimary }]}>Trade History</Text>
-          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.emptyTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Trade History</Text>
+          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             Sign in to view your trades
           </Text>
         </View>
@@ -177,8 +177,8 @@ export default function TradeHistoryScreen({ navigation }) {
           onAccountPress={() => setShowAccountModal(true)}
         />
         <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
-          <Text style={[styles.title, { color: themeColors.textPrimary }]}>Trade History</Text>
-          <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.title, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Trade History</Text>
+          <Text style={[styles.subtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             {selectedAccount?.name || 'No account'} • {filteredTrades.length} trades
           </Text>
         </View>
@@ -205,7 +205,7 @@ export default function TradeHistoryScreen({ navigation }) {
           }
           ListEmptyComponent={
             <View style={styles.emptyList}>
-              <Text style={[styles.emptyListText, { color: themeColors.textSecondary }]}>
+              <Text style={[styles.emptyListText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                 No trades found
               </Text>
             </View>

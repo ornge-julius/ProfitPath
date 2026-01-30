@@ -110,7 +110,7 @@ export default function DashboardScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColors.primary} />
-          <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>Loading...</Text>
+          <Text style={[styles.loadingText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -120,8 +120,8 @@ export default function DashboardScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyTitle, { color: themeColors.text }]}>Welcome to ProfitPath</Text>
-          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.emptyTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Welcome to ProfitPath</Text>
+          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             Sign in to start tracking your trades
           </Text>
         </View>
@@ -224,10 +224,10 @@ export default function DashboardScreen() {
                 radius={70}
                 centerLabelComponent={() => (
                   <View style={styles.pieCenter}>
-                    <Text style={[styles.pieCenterValue, { color: themeColors.textPrimary }]}>
+                    <Text style={[styles.pieCenterValue, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>
                       {metrics.winRate.toFixed(0)}%
                     </Text>
-                    <Text style={[styles.pieCenterLabel, { color: themeColors.textSecondary }]}>
+                    <Text style={[styles.pieCenterLabel, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                       Win Rate
                     </Text>
                   </View>
@@ -236,13 +236,13 @@ export default function DashboardScreen() {
               <View style={styles.pieLegend}>
                 <View style={styles.legendItem}>
                   <View style={[styles.legendDot, { backgroundColor: themeColors.win }]} />
-                  <Text style={[styles.legendText, { color: themeColors.textPrimary }]}>
+                  <Text style={[styles.legendText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
                     Wins: {metrics.winningTrades}
                   </Text>
                 </View>
                 <View style={styles.legendItem}>
                   <View style={[styles.legendDot, { backgroundColor: themeColors.loss }]} />
-                  <Text style={[styles.legendText, { color: themeColors.textPrimary }]}>
+                  <Text style={[styles.legendText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
                     Losses: {metrics.losingTrades}
                   </Text>
                 </View>
@@ -276,7 +276,7 @@ export default function DashboardScreen() {
 
         {filteredTrades.length === 0 && (
           <LuxeCard style={styles.chartCard}>
-            <Text style={[styles.emptyChartText, { color: themeColors.textSecondary }]}>
+            <Text style={[styles.emptyChartText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
               Add trades to see your charts
             </Text>
           </LuxeCard>

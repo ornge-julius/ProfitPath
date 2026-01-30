@@ -12,12 +12,11 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '@profitpath/shared';
 
 export default function SignUpScreen({ navigation }) {
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors } = useTheme();
   const { signUpWithEmail } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -66,7 +65,7 @@ export default function SignUpScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -77,32 +76,26 @@ export default function SignUpScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.content}>
-            {/* Logo / Title */}
             <View style={styles.header}>
-              <Text style={[styles.logo, { color: themeColors.primary }]}>ProfitPath</Text>
-              <Text style={[styles.tagline, { color: themeColors.textSecondary }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'baseline' }}>
+                <Text style={[styles.logo, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Profit</Text>
+                <Text style={[styles.logo, { color: themeColors.accentGold, fontFamily: themeColors.fontDisplay }]}>Path</Text>
+              </View>
+              <Text style={[styles.tagline, { color: themeColors.textMuted, fontFamily: themeColors.fontMono }]}>
                 Track your trading journey
               </Text>
             </View>
 
-            {/* Form */}
             <View style={styles.form}>
-              <Text style={[styles.title, { color: themeColors.text }]}>Create Account</Text>
-              <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+              <Text style={[styles.title, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Create Account</Text>
+              <Text style={[styles.subtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                 Start tracking your trades today
               </Text>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: themeColors.textSecondary }]}>Email</Text>
+                <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Email</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeColors.surface,
-                      borderColor: themeColors.border,
-                      color: themeColors.text,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="your@email.com"
@@ -115,16 +108,9 @@ export default function SignUpScreen({ navigation }) {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: themeColors.textSecondary }]}>Password</Text>
+                <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Password</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeColors.surface,
-                      borderColor: themeColors.border,
-                      color: themeColors.text,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
                   value={password}
                   onChangeText={setPassword}
                   placeholder="At least 6 characters"
@@ -135,18 +121,11 @@ export default function SignUpScreen({ navigation }) {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={[styles.label, { color: themeColors.textSecondary }]}>
+                <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                   Confirm Password
                 </Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeColors.surface,
-                      borderColor: themeColors.border,
-                      color: themeColors.text,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter your password"
@@ -157,11 +136,7 @@ export default function SignUpScreen({ navigation }) {
               </View>
 
               <TouchableOpacity
-                style={[
-                  styles.button,
-                  { backgroundColor: themeColors.primary },
-                  isLoading && styles.buttonDisabled,
-                ]}
+                style={[styles.button, { backgroundColor: themeColors.accentGold }, isLoading && styles.buttonDisabled]}
                 onPress={handleSignUp}
                 disabled={isLoading}
                 activeOpacity={0.8}
@@ -169,18 +144,17 @@ export default function SignUpScreen({ navigation }) {
                 {isLoading ? (
                   <ActivityIndicator color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.buttonText}>Create Account</Text>
+                  <Text style={[styles.buttonText, { fontFamily: themeColors.fontMono }]}>Create Account</Text>
                 )}
               </TouchableOpacity>
             </View>
 
-            {/* Footer */}
             <View style={styles.footer}>
-              <Text style={[styles.footerText, { color: themeColors.textSecondary }]}>
+              <Text style={[styles.footerText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity onPress={() => navigation.navigate('SignIn')} disabled={isLoading}>
-                <Text style={[styles.linkText, { color: themeColors.primary }]}>Sign In</Text>
+                <Text style={[styles.linkText, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>Sign In</Text>
               </TouchableOpacity>
             </View>
           </View>

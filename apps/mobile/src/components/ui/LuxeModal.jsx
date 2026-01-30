@@ -40,7 +40,7 @@ export default function LuxeModal({
             )}
             {showClose && (
               <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Text style={[styles.closeText, { color: colors.textSecondary }]}>✕</Text>
+                <Text style={[styles.closeText, { color: colors.textSecondary, fontFamily: colors.fontMono }]}>✕</Text>
               </TouchableOpacity>
             )}
           </View>

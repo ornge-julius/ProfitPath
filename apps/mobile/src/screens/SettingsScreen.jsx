@@ -9,51 +9,40 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useTheme, colors, THEMES } from '../context/ThemeContext';
+import { useTheme, THEMES } from '../context/ThemeContext';
 import { useAuth } from '@profitpath/shared';
 import { useAppStateContext } from '../context/AppStateContext';
 import AccountSelectorModal from '../components/AccountSelectorModal';
 import { lightHaptic, selectionHaptic, warningHaptic } from '../utils/haptics';
 
-// Settings Row Component
-const SettingsRow = ({ label, value, onPress, isDark, showChevron = true }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-
-  return (
-    <TouchableOpacity
-      style={[styles.row, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
-      onPress={onPress}
-      activeOpacity={0.7}
-      disabled={!onPress}
-    >
-      <Text style={[styles.rowLabel, { color: themeColors.text }]}>{label}</Text>
-      <View style={styles.rowRight}>
-        {value && (
-          <Text style={[styles.rowValue, { color: themeColors.textSecondary }]}>{value}</Text>
-        )}
-        {showChevron && onPress && (
-          <Text style={[styles.chevron, { color: themeColors.textMuted }]}>›</Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-// Settings Section Component
-const SettingsSection = ({ title, children, isDark }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-
-  return (
-    <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: themeColors.textSecondary }]}>{title}</Text>
-      <View style={styles.sectionContent}>{children}</View>
+const SettingsRow = ({ label, value, onPress, themeColors, showChevron = true }) => (
+  <TouchableOpacity
+    style={[styles.row, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
+    onPress={onPress}
+    activeOpacity={0.7}
+    disabled={!onPress}
+  >
+    <Text style={[styles.rowLabel, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>{label}</Text>
+    <View style={styles.rowRight}>
+      {value && (
+        <Text style={[styles.rowValue, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>{value}</Text>
+      )}
+      {showChevron && onPress && (
+        <Text style={[styles.chevron, { color: themeColors.textMuted, fontFamily: themeColors.fontMono }]}>›</Text>
+      )}
     </View>
-  );
-};
+  </TouchableOpacity>
+);
+
+const SettingsSection = ({ title, children, themeColors }) => (
+  <View style={styles.section}>
+    <Text style={[styles.sectionTitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>{title}</Text>
+    <View style={styles.sectionContent}>{children}</View>
+  </View>
+);
 
 export default function SettingsScreen() {
-  const { isDark, themePreference, setTheme } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors, themePreference, setTheme } = useTheme();
   const { user, signOut, isLoading: authLoading } = useAuth();
   const { selectedAccount, accounts } = useAppStateContext();
   
@@ -131,80 +120,45 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: themeColors.text }]}>Settings</Text>
+          <Text style={[styles.title, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Settings</Text>
         </View>
 
-        {/* Account Section */}
-        <SettingsSection title="Account" isDark={isDark}>
-          <SettingsRow
-            label="Current Account"
-            value={selectedAccount?.name || 'No account selected'}
-            onPress={() => setShowAccountModal(true)}
-            isDark={isDark}
-          />
-          <SettingsRow
-            label="Starting Balance"
-            value={selectedAccount ? `$${selectedAccount.startingBalance.toLocaleString()}` : '-'}
-            isDark={isDark}
-            showChevron={false}
-          />
-          <SettingsRow
-            label="Total Accounts"
-            value={accounts.length.toString()}
-            isDark={isDark}
-            showChevron={false}
-          />
+        <SettingsSection title="Account" themeColors={themeColors}>
+          <SettingsRow label="Current Account" value={selectedAccount?.name || 'No account selected'} onPress={() => setShowAccountModal(true)} themeColors={themeColors} />
+          <SettingsRow label="Starting Balance" value={selectedAccount ? `$${selectedAccount.startingBalance.toLocaleString()}` : '-'} themeColors={themeColors} showChevron={false} />
+          <SettingsRow label="Total Accounts" value={accounts.length.toString()} themeColors={themeColors} showChevron={false} />
         </SettingsSection>
 
-        {/* Appearance Section */}
-        <SettingsSection title="Appearance" isDark={isDark}>
-          <SettingsRow
-            label="Theme"
-            value={getThemeLabel()}
-            onPress={handleThemeChange}
-            isDark={isDark}
-          />
+        <SettingsSection title="Appearance" themeColors={themeColors}>
+          <SettingsRow label="Theme" value={getThemeLabel()} onPress={handleThemeChange} themeColors={themeColors} />
         </SettingsSection>
 
-        {/* User Section */}
-        <SettingsSection title="User" isDark={isDark}>
-          <SettingsRow
-            label="Email"
-            value={user?.email || '-'}
-            isDark={isDark}
-            showChevron={false}
-          />
+        <SettingsSection title="User" themeColors={themeColors}>
+          <SettingsRow label="Email" value={user?.email || '-'} themeColors={themeColors} showChevron={false} />
         </SettingsSection>
 
-        {/* Sign Out Button */}
         <TouchableOpacity
-          style={[
-            styles.signOutButton,
-            { backgroundColor: themeColors.surface, borderColor: themeColors.border },
-            isSigningOut && styles.buttonDisabled,
-          ]}
+          style={[styles.signOutButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }, isSigningOut && styles.buttonDisabled]}
           onPress={handleSignOut}
           disabled={isSigningOut}
           activeOpacity={0.7}
         >
           {isSigningOut ? (
-            <ActivityIndicator color={themeColors.danger} />
+            <ActivityIndicator color={themeColors.loss} />
           ) : (
-            <Text style={[styles.signOutText, { color: themeColors.danger }]}>Sign Out</Text>
+            <Text style={[styles.signOutText, { color: themeColors.loss, fontFamily: themeColors.fontMono }]}>Sign Out</Text>
           )}
         </TouchableOpacity>
 
-        {/* App Info */}
         <View style={styles.appInfo}>
-          <Text style={[styles.appVersion, { color: themeColors.textMuted }]}>
+          <Text style={[styles.appVersion, { color: themeColors.textMuted, fontFamily: themeColors.fontMono }]}>
             ProfitPath v1.0.0
           </Text>
         </View>

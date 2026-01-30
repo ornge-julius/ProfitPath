@@ -51,17 +51,17 @@ export default function SignInScreen({ navigation }) {
         <View style={styles.content}>
           <View style={styles.header}>
             <View style={styles.logoRow}>
-              <Text style={[styles.logoProfit, { color: colors.textPrimary }]}>Profit</Text>
-              <Text style={[styles.logoPath, { color: colors.accentGold }]}>Path</Text>
+              <Text style={[styles.logoProfit, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>Profit</Text>
+              <Text style={[styles.logoPath, { color: colors.accentGold, fontFamily: colors.fontDisplay }]}>Path</Text>
             </View>
-            <Text style={[styles.tagline, { color: colors.textMuted }]}>
+            <Text style={[styles.tagline, { color: colors.textMuted, fontFamily: colors.fontMono }]}>
               Track your trading journey
             </Text>
           </View>
 
           <View style={styles.form}>
-            <Text style={[styles.title, { color: colors.textPrimary }]}>Welcome Back</Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            <Text style={[styles.title, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: colors.fontMono }]}>
               Sign in to continue
             </Text>
 
@@ -93,11 +93,11 @@ export default function SignInScreen({ navigation }) {
           </View>
 
           <View style={styles.footer}>
-            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
+            <Text style={[styles.footerText, { color: colors.textSecondary, fontFamily: colors.fontMono }]}>
               Don't have an account?{' '}
             </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')} disabled={isLoading}>
-              <Text style={[styles.linkText, { color: colors.accentGold }]}>Sign Up</Text>
+              <Text style={[styles.linkText, { color: colors.accentGold, fontFamily: colors.fontMono }]}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>

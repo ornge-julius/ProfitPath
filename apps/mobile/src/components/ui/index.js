@@ -5,3 +5,4 @@ export { default as LuxeLabel } from './LuxeLabel';
 export { LuxeStat, LuxeStatValue, LuxeStatLabel } from './LuxeStat';
 export { LuxeBadge, LuxeBadgeWin, LuxeBadgeLoss } from './LuxeBadge';
 export { default as LuxeModal } from './LuxeModal';
+export { LuxeTextDisplay, LuxeTextMono } from './LuxeText';

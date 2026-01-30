@@ -12,15 +12,14 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAppStateContext } from '../context/AppStateContext';
 
 /**
  * Modal for selecting, creating, editing, and deleting accounts.
  */
 export default function AccountSelectorModal({ visible, onClose }) {
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors } = useTheme();
   const {
     accounts,
     selectedAccountId,
@@ -121,37 +120,29 @@ export default function AccountSelectorModal({ visible, onClose }) {
         style={[
           styles.accountItem,
           {
-            backgroundColor: isSelected ? themeColors.primary + '15' : themeColors.surface,
-            borderColor: isSelected ? themeColors.primary : themeColors.border,
+            backgroundColor: isSelected ? themeColors.accentGold + '15' : themeColors.bgSurface,
+            borderColor: isSelected ? themeColors.accentGold : themeColors.border,
           },
         ]}
         onPress={() => handleSelectAccount(item.id)}
         activeOpacity={0.7}
       >
         <View style={styles.accountInfo}>
-          <Text style={[styles.accountName, { color: themeColors.text }]}>{item.name}</Text>
-          <Text style={[styles.accountBalance, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.accountName, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>{item.name}</Text>
+          <Text style={[styles.accountBalance, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             Starting Balance: ${item.startingBalance.toLocaleString()}
           </Text>
         </View>
         <View style={styles.accountActions}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleEditPress(item)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={[styles.actionText, { color: themeColors.primary }]}>Edit</Text>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleEditPress(item)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Text style={[styles.actionText, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>Edit</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleDeletePress(item)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={[styles.actionText, { color: themeColors.danger }]}>Delete</Text>
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleDeletePress(item)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Text style={[styles.actionText, { color: themeColors.loss, fontFamily: themeColors.fontMono }]}>Delete</Text>
           </TouchableOpacity>
         </View>
         {isSelected && (
-          <View style={[styles.selectedIndicator, { backgroundColor: themeColors.primary }]} />
+          <View style={[styles.selectedIndicator, { backgroundColor: themeColors.accentGold }]} />
         )}
       </TouchableOpacity>
     );
@@ -160,9 +151,9 @@ export default function AccountSelectorModal({ visible, onClose }) {
   const renderListView = () => (
     <>
       <View style={styles.modalHeader}>
-        <Text style={[styles.modalTitle, { color: themeColors.text }]}>Select Account</Text>
+        <Text style={[styles.modalTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Select Account</Text>
         <TouchableOpacity onPress={handleClose}>
-          <Text style={[styles.closeButton, { color: themeColors.textSecondary }]}>✕</Text>
+          <Text style={[styles.closeButton, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>✕</Text>
         </TouchableOpacity>
       </View>
 
@@ -173,19 +164,15 @@ export default function AccountSelectorModal({ visible, onClose }) {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
+            <Text style={[styles.emptyText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
               No accounts yet. Create one to get started!
             </Text>
           </View>
         }
       />
 
-      <TouchableOpacity
-        style={[styles.createButton, { backgroundColor: themeColors.primary }]}
-        onPress={handleCreatePress}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.createButtonText}>+ Create New Account</Text>
+      <TouchableOpacity style={[styles.createButton, { backgroundColor: themeColors.accentGold }]} onPress={handleCreatePress} activeOpacity={0.8}>
+        <Text style={[styles.createButtonText, { fontFamily: themeColors.fontMono }]}>+ Create New Account</Text>
       </TouchableOpacity>
     </>
   );
@@ -197,9 +184,9 @@ export default function AccountSelectorModal({ visible, onClose }) {
     >
       <View style={styles.modalHeader}>
         <TouchableOpacity onPress={resetForm}>
-          <Text style={[styles.backButton, { color: themeColors.primary }]}>← Back</Text>
+          <Text style={[styles.backButton, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+        <Text style={[styles.modalTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>
           {mode === 'create' ? 'Create Account' : 'Edit Account'}
         </Text>
         <View style={{ width: 50 }} />
@@ -207,16 +194,9 @@ export default function AccountSelectorModal({ visible, onClose }) {
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: themeColors.textSecondary }]}>Account Name</Text>
+          <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Account Name</Text>
           <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: themeColors.surface,
-                borderColor: themeColors.border,
-                color: themeColors.text,
-              },
-            ]}
+            style={[styles.input, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
             value={name}
             onChangeText={setName}
             placeholder="e.g., Main Trading Account"
@@ -226,16 +206,9 @@ export default function AccountSelectorModal({ visible, onClose }) {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: themeColors.textSecondary }]}>Starting Balance</Text>
+          <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Starting Balance</Text>
           <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: themeColors.surface,
-                borderColor: themeColors.border,
-                color: themeColors.text,
-              },
-            ]}
+            style={[styles.input, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border, color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}
             value={startingBalance}
             onChangeText={setStartingBalance}
             placeholder="0"
@@ -245,11 +218,7 @@ export default function AccountSelectorModal({ visible, onClose }) {
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.submitButton,
-            { backgroundColor: themeColors.primary },
-            isSubmitting && styles.buttonDisabled,
-          ]}
+          style={[styles.submitButton, { backgroundColor: themeColors.accentGold }, isSubmitting && styles.buttonDisabled]}
           onPress={handleSubmit}
           disabled={isSubmitting}
           activeOpacity={0.8}
@@ -257,7 +226,7 @@ export default function AccountSelectorModal({ visible, onClose }) {
           {isSubmitting ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.submitButtonText}>
+            <Text style={[styles.submitButtonText, { fontFamily: themeColors.fontMono }]}>
               {mode === 'create' ? 'Create Account' : 'Save Changes'}
             </Text>
           )}
@@ -273,7 +242,7 @@ export default function AccountSelectorModal({ visible, onClose }) {
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <View style={[styles.modalContainer, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.modalContainer, { backgroundColor: themeColors.bgPrimary }]}>
         {mode === 'list' ? renderListView() : renderFormView()}
       </View>
     </Modal>

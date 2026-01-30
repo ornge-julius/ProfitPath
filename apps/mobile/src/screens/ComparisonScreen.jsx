@@ -83,11 +83,11 @@ export default function ComparisonScreen({ navigation }) {
           <Text style={[styles.title, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>
             Trade Batch Comparison
           </Text>
-          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          <Text style={[styles.subtitle, { color: colors.textMuted, fontFamily: colors.fontMono }]}>
             No trades available for comparison
           </Text>
           <LuxeCard style={styles.emptyCard}>
-            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            <Text style={[styles.emptyText, { color: colors.textSecondary, fontFamily: colors.fontMono }]}>
               Please add trades to view batch comparison
             </Text>
           </LuxeCard>
@@ -150,7 +150,7 @@ export default function ComparisonScreen({ navigation }) {
                   innerRadius={28}
                   radius={40}
                   centerLabelComponent={() => (
-                    <Text style={[styles.pieCenter, { color: colors.textPrimary }]}>
+                    <Text style={[styles.pieCenter, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>
                       {previousMetrics.winRate.toFixed(0)}%
                     </Text>
                   )}
@@ -169,7 +169,7 @@ export default function ComparisonScreen({ navigation }) {
                   innerRadius={28}
                   radius={40}
                   centerLabelComponent={() => (
-                    <Text style={[styles.pieCenter, { color: colors.textPrimary }]}>
+                    <Text style={[styles.pieCenter, { color: colors.textPrimary, fontFamily: colors.fontDisplay }]}>
                       {currentMetrics.winRate.toFixed(0)}%
                     </Text>
                   )}
@@ -182,13 +182,13 @@ export default function ComparisonScreen({ navigation }) {
         <View style={styles.twoCol}>
           <LuxeCard style={styles.metricCard}>
             <LuxeStatLabel>Previous Avg W/L</LuxeStatLabel>
-            <Text style={[styles.avgWin, { color: winColor }]}>{formatCurrency(previousMetrics.avgWin)}</Text>
-            <Text style={[styles.avgLoss, { color: lossColor }]}>{formatCurrency(previousMetrics.avgLoss)}</Text>
+            <Text style={[styles.avgWin, { color: winColor, fontFamily: colors.fontMono }]}>{formatCurrency(previousMetrics.avgWin)}</Text>
+            <Text style={[styles.avgLoss, { color: lossColor, fontFamily: colors.fontMono }]}>{formatCurrency(previousMetrics.avgLoss)}</Text>
           </LuxeCard>
           <LuxeCard style={styles.metricCard}>
             <LuxeStatLabel>Current Avg W/L</LuxeStatLabel>
-            <Text style={[styles.avgWin, { color: winColor }]}>{formatCurrency(currentMetrics.avgWin)}</Text>
-            <Text style={[styles.avgLoss, { color: lossColor }]}>{formatCurrency(currentMetrics.avgLoss)}</Text>
+            <Text style={[styles.avgWin, { color: winColor, fontFamily: colors.fontMono }]}>{formatCurrency(currentMetrics.avgWin)}</Text>
+            <Text style={[styles.avgLoss, { color: lossColor, fontFamily: colors.fontMono }]}>{formatCurrency(currentMetrics.avgLoss)}</Text>
           </LuxeCard>
         </View>
 
@@ -215,13 +215,13 @@ export default function ComparisonScreen({ navigation }) {
         <View style={styles.twoCol}>
           <LuxeCard style={styles.metricCard}>
             <LuxeStatLabel>Previous Batch</LuxeStatLabel>
-            <Text style={[styles.metricText, { color: colors.textPrimary }]}>
+            <Text style={[styles.metricText, { color: colors.textPrimary, fontFamily: colors.fontMono }]}>
               {previousMetrics.totalTrades} trades · {formatCurrency(previousMetrics.totalProfit)}
             </Text>
           </LuxeCard>
           <LuxeCard style={styles.metricCard}>
             <LuxeStatLabel>Current Batch</LuxeStatLabel>
-            <Text style={[styles.metricText, { color: colors.textPrimary }]}>
+            <Text style={[styles.metricText, { color: colors.textPrimary, fontFamily: colors.fontMono }]}>
               {currentMetrics.totalTrades} trades · {formatCurrency(currentMetrics.totalProfit)}
             </Text>
           </LuxeCard>

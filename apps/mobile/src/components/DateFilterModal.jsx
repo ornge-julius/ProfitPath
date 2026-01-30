@@ -9,15 +9,14 @@ import {
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useDateFilter, DATE_FILTER_OPTIONS } from '../context/DateFilterContext';
 
 /**
  * Modal for selecting date filter range.
  */
 export default function DateFilterModal({ visible, onClose }) {
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors, isDark } = useTheme();
   const { filter, setFilter, setCustomRange } = useDateFilter();
 
   const [showCustomPicker, setShowCustomPicker] = useState(false);
@@ -86,16 +85,16 @@ export default function DateFilterModal({ visible, onClose }) {
             style={[
               styles.optionItem,
               {
-                backgroundColor: isSelected ? themeColors.primary + '15' : themeColors.surface,
-                borderColor: isSelected ? themeColors.primary : themeColors.border,
+                backgroundColor: isSelected ? themeColors.accentGold + '15' : themeColors.bgSurface,
+                borderColor: isSelected ? themeColors.accentGold : themeColors.border,
               },
             ]}
             onPress={() => handleSelectOption(option)}
             activeOpacity={0.7}
           >
-            <Text style={[styles.optionText, { color: themeColors.text }]}>{option.label}</Text>
+            <Text style={[styles.optionText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>{option.label}</Text>
             {isSelected && (
-              <Text style={[styles.checkmark, { color: themeColors.primary }]}>✓</Text>
+              <Text style={[styles.checkmark, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>✓</Text>
             )}
           </TouchableOpacity>
         );
@@ -105,58 +104,52 @@ export default function DateFilterModal({ visible, onClose }) {
 
   const renderCustomPicker = () => (
     <View style={styles.customPickerContainer}>
-      <Text style={[styles.customTitle, { color: themeColors.text }]}>Select Date Range</Text>
+      <Text style={[styles.customTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Select Date Range</Text>
 
       <View style={styles.datePickerRow}>
         <View style={styles.datePickerColumn}>
-          <Text style={[styles.dateLabel, { color: themeColors.textSecondary }]}>Start Date</Text>
+          <Text style={[styles.dateLabel, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Start Date</Text>
           <TouchableOpacity
-            style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+            style={[styles.dateButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
             onPress={() => setPickingDate('start')}
           >
-            <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+            <Text style={[styles.dateButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
               {formatDate(customStartDate)}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.datePickerColumn}>
-          <Text style={[styles.dateLabel, { color: themeColors.textSecondary }]}>End Date</Text>
+          <Text style={[styles.dateLabel, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>End Date</Text>
           <TouchableOpacity
-            style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+            style={[styles.dateButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
             onPress={() => setPickingDate('end')}
           >
-            <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+            <Text style={[styles.dateButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
               {formatDate(customEndDate)}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={[styles.pickerWrapper, { backgroundColor: themeColors.surface }]}>
+      <View style={[styles.pickerWrapper, { backgroundColor: themeColors.bgSurface }]}>
         <DateTimePicker
           value={pickingDate === 'start' ? customStartDate : customEndDate}
           mode="date"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleDateChange}
           maximumDate={new Date()}
-          textColor={themeColors.text}
+          textColor={themeColors.textPrimary}
           themeVariant={isDark ? 'dark' : 'light'}
         />
       </View>
 
       <View style={styles.customActions}>
-        <TouchableOpacity
-          style={[styles.cancelButton, { borderColor: themeColors.border }]}
-          onPress={() => setShowCustomPicker(false)}
-        >
-          <Text style={[styles.cancelButtonText, { color: themeColors.text }]}>Back</Text>
+        <TouchableOpacity style={[styles.cancelButton, { borderColor: themeColors.border }]} onPress={() => setShowCustomPicker(false)}>
+          <Text style={[styles.cancelButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.applyButton, { backgroundColor: themeColors.primary }]}
-          onPress={handleApplyCustomRange}
-        >
-          <Text style={styles.applyButtonText}>Apply</Text>
+        <TouchableOpacity style={[styles.applyButton, { backgroundColor: themeColors.accentGold }]} onPress={handleApplyCustomRange}>
+          <Text style={[styles.applyButtonText, { fontFamily: themeColors.fontMono }]}>Apply</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -169,13 +162,13 @@ export default function DateFilterModal({ visible, onClose }) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.modalContainer, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.modalContainer, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.modalHeader}>
-          <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+          <Text style={[styles.modalTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>
             {showCustomPicker ? 'Custom Range' : 'Date Filter'}
           </Text>
           <TouchableOpacity onPress={onClose}>
-            <Text style={[styles.closeButton, { color: themeColors.textSecondary }]}>✕</Text>
+            <Text style={[styles.closeButton, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>✕</Text>
           </TouchableOpacity>
         </View>
 

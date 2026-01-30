@@ -7,15 +7,14 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useTagFilter, FILTER_MODES } from '../context/TagFilterContext';
 
 /**
  * Modal for selecting tag filters.
  */
 export default function TagFilterModal({ visible, onClose }) {
-  const { isDark } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors } = useTheme();
   const {
     allTags,
     selectedTagIds,
@@ -38,20 +37,20 @@ export default function TagFilterModal({ visible, onClose }) {
         style={[
           styles.tagItem,
           {
-            backgroundColor: isSelected ? themeColors.primary + '15' : themeColors.surface,
-            borderColor: isSelected ? themeColors.primary : themeColors.border,
+            backgroundColor: isSelected ? themeColors.accentGold + '15' : themeColors.bgSurface,
+            borderColor: isSelected ? themeColors.accentGold : themeColors.border,
           },
         ]}
         onPress={() => toggleTag(item.id)}
         activeOpacity={0.7}
       >
-        <View style={[styles.checkbox, { borderColor: isSelected ? themeColors.primary : themeColors.border }]}>
+        <View style={[styles.checkbox, { borderColor: isSelected ? themeColors.accentGold : themeColors.border }]}>
           {isSelected && (
-            <View style={[styles.checkboxInner, { backgroundColor: themeColors.primary }]} />
+            <View style={[styles.checkboxInner, { backgroundColor: themeColors.accentGold }]} />
           )}
         </View>
-        <Text style={[styles.tagName, { color: themeColors.text }]}>{item.name}</Text>
-        <View style={[styles.tagBadge, { backgroundColor: item.color || themeColors.primary }]} />
+        <Text style={[styles.tagName, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>{item.name}</Text>
+        <View style={[styles.tagBadge, { backgroundColor: item.color || themeColors.accentGold }]} />
       </TouchableOpacity>
     );
   };
@@ -63,61 +62,42 @@ export default function TagFilterModal({ visible, onClose }) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.modalContainer, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.modalContainer, { backgroundColor: themeColors.bgPrimary }]}>
         <View style={styles.modalHeader}>
-          <Text style={[styles.modalTitle, { color: themeColors.text }]}>Filter by Tags</Text>
+          <Text style={[styles.modalTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Filter by Tags</Text>
           <TouchableOpacity onPress={onClose}>
-            <Text style={[styles.closeButton, { color: themeColors.textSecondary }]}>✕</Text>
+            <Text style={[styles.closeButton, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>✕</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Filter Mode Toggle */}
-        <View style={[styles.modeToggle, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+        <View style={[styles.modeToggle, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}>
           <TouchableOpacity
-            style={[
-              styles.modeButton,
-              filterMode === FILTER_MODES.AND && { backgroundColor: themeColors.primary },
-            ]}
+            style={[styles.modeButton, filterMode === FILTER_MODES.AND && { backgroundColor: themeColors.accentGold }]}
             onPress={() => setFilterMode(FILTER_MODES.AND)}
           >
-            <Text
-              style={[
-                styles.modeButtonText,
-                { color: filterMode === FILTER_MODES.AND ? '#FFFFFF' : themeColors.text },
-              ]}
-            >
+            <Text style={[styles.modeButtonText, { color: filterMode === FILTER_MODES.AND ? '#FFFFFF' : themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
               Match All
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.modeButton,
-              filterMode === FILTER_MODES.OR && { backgroundColor: themeColors.primary },
-            ]}
+            style={[styles.modeButton, filterMode === FILTER_MODES.OR && { backgroundColor: themeColors.accentGold }]}
             onPress={() => setFilterMode(FILTER_MODES.OR)}
           >
-            <Text
-              style={[
-                styles.modeButtonText,
-                { color: filterMode === FILTER_MODES.OR ? '#FFFFFF' : themeColors.text },
-              ]}
-            >
+            <Text style={[styles.modeButtonText, { color: filterMode === FILTER_MODES.OR ? '#FFFFFF' : themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
               Match Any
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Quick Actions */}
         <View style={styles.quickActions}>
           <TouchableOpacity onPress={selectAllTags}>
-            <Text style={[styles.quickActionText, { color: themeColors.primary }]}>Select All</Text>
+            <Text style={[styles.quickActionText, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>Select All</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={clearTags}>
-            <Text style={[styles.quickActionText, { color: themeColors.primary }]}>Clear All</Text>
+            <Text style={[styles.quickActionText, { color: themeColors.accentGold, fontFamily: themeColors.fontMono }]}>Clear All</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Tags List */}
         <FlatList
           data={allTags}
           keyExtractor={(item) => item.id.toString()}
@@ -125,29 +105,23 @@ export default function TagFilterModal({ visible, onClose }) {
           contentContainerStyle={styles.tagsList}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
+              <Text style={[styles.emptyText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
                 No tags found. Add tags to your trades to filter by them.
               </Text>
             </View>
           }
         />
 
-        {/* Selected Count */}
         {selectedTagIds.length > 0 && (
-          <View style={[styles.selectedInfo, { backgroundColor: themeColors.surface, borderTopColor: themeColors.border }]}>
-            <Text style={[styles.selectedText, { color: themeColors.textSecondary }]}>
+          <View style={[styles.selectedInfo, { backgroundColor: themeColors.bgSurface, borderTopColor: themeColors.border }]}>
+            <Text style={[styles.selectedText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
               {selectedTagIds.length} tag{selectedTagIds.length !== 1 ? 's' : ''} selected ({filterMode.toUpperCase()} mode)
             </Text>
           </View>
         )}
 
-        {/* Apply Button */}
-        <TouchableOpacity
-          style={[styles.applyButton, { backgroundColor: themeColors.primary }]}
-          onPress={onClose}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.applyButtonText}>Apply Filter</Text>
+        <TouchableOpacity style={[styles.applyButton, { backgroundColor: themeColors.accentGold }]} onPress={onClose} activeOpacity={0.8}>
+          <Text style={[styles.applyButtonText, { fontFamily: themeColors.fontMono }]}>Apply Filter</Text>
         </TouchableOpacity>
       </View>
     </Modal>

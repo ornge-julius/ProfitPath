@@ -161,11 +161,11 @@ export default function TagsScreen({ navigation }) {
         {isLoading ? (
           <View style={styles.centered}>
             <ActivityIndicator size="large" color={colors.accentGold} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading tags...</Text>
+            <Text style={[styles.loadingText, { color: colors.textSecondary, fontFamily: colors.fontMono }]}>Loading tags...</Text>
           </View>
         ) : !isAuthenticated ? (
           <LuxeCard style={styles.emptyCard}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            <Text style={[styles.emptyText, { color: colors.textMuted, fontFamily: colors.fontMono }]}>
               Sign in to manage tags
             </Text>
           </LuxeCard>
@@ -194,7 +194,7 @@ export default function TagsScreen({ navigation }) {
           </LuxeCard>
         ) : sortedTags.length === 0 ? (
           <LuxeCard style={styles.emptyCard}>
-            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+            <Text style={[styles.emptyText, { color: colors.textMuted, fontFamily: colors.fontMono }]}>
               No tags yet. Create your first tag to get started!
             </Text>
           </LuxeCard>

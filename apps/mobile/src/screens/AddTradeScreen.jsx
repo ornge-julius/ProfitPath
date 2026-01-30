@@ -1,73 +1,53 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity, Alert, ActivityIndicator, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTheme, colors } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 import { useAppStateContext } from '../context/AppStateContext';
 import { useAuth, useTradeManagement, getTradeTypeNumber, getResultNumber } from '@profitpath/shared';
 
-// Form Input Component
-const FormInput = ({ label, value, onChangeText, placeholder, keyboardType = 'default', isDark }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-  
-  return (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.label, { color: themeColors.textSecondary }]}>{label}</Text>
-      <TextInput
-        style={[styles.input, { 
-          backgroundColor: themeColors.surface, 
-          borderColor: themeColors.border,
-          color: themeColors.text 
-        }]}
+const FormInput = ({ label, value, onChangeText, placeholder, keyboardType = 'default', themeColors }) => (
+  <View style={styles.inputContainer}>
+    <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>{label}</Text>
+    <TextInput
+      style={[styles.input, { 
+        backgroundColor: themeColors.bgSurface, 
+        borderColor: themeColors.border,
+        color: themeColors.textPrimary,
+        fontFamily: themeColors.fontMono,
+      }]}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
         placeholderTextColor={themeColors.textMuted}
         keyboardType={keyboardType}
-        autoCapitalize={label === 'Symbol' ? 'characters' : 'none'}
-      />
-    </View>
-  );
-};
+      autoCapitalize={label === 'Symbol' ? 'characters' : 'none'}
+    />
+  </View>
+);
 
-// Option Button Component
-const OptionButton = ({ label, isSelected, onPress, variant = 'default', isDark }) => {
-  const themeColors = isDark ? colors.dark : colors.light;
-  
+const OptionButton = ({ label, isSelected, onPress, variant = 'default', themeColors }) => {
   const getVariantColors = () => {
-    if (!isSelected) return { bg: themeColors.surface, text: themeColors.text };
-    
+    if (!isSelected) return { bg: themeColors.bgSurface, text: themeColors.textPrimary };
     switch (variant) {
-      case 'success':
-        return { bg: '#10B98120', text: themeColors.success };
-      case 'danger':
-        return { bg: '#EF444420', text: themeColors.danger };
-      default:
-        return { bg: themeColors.primary + '20', text: themeColors.primary };
+      case 'success': return { bg: themeColors.winBg, text: themeColors.win };
+      case 'danger': return { bg: themeColors.lossBg, text: themeColors.loss };
+      default: return { bg: themeColors.accentGold + '20', text: themeColors.accentGold };
     }
   };
-  
   const variantColors = getVariantColors();
-  
   return (
     <TouchableOpacity
-      style={[
-        styles.optionButton,
-        { 
-          backgroundColor: variantColors.bg,
-          borderColor: isSelected ? variantColors.text : themeColors.border 
-        }
-      ]}
+      style={[styles.optionButton, { backgroundColor: variantColors.bg, borderColor: isSelected ? variantColors.text : themeColors.border }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Text style={[styles.optionText, { color: variantColors.text }]}>{label}</Text>
+      <Text style={[styles.optionText, { color: variantColors.text, fontFamily: themeColors.fontMono }]}>{label}</Text>
     </TouchableOpacity>
   );
 };
 
 export default function AddTradeScreen({ navigation }) {
-  const { isDark, isLoading: themeLoading } = useTheme();
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { colors: themeColors, isLoading: themeLoading, isDark } = useTheme();
   
   const { user, isLoading: authLoading } = useAuth();
   const { selectedAccountId, selectedAccount } = useAppStateContext();
@@ -193,7 +173,7 @@ export default function AddTradeScreen({ navigation }) {
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={themeColors.primary} />
-          <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>Loading...</Text>
+          <Text style={[styles.loadingText, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
@@ -203,8 +183,8 @@ export default function AddTradeScreen({ navigation }) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyTitle, { color: themeColors.text }]}>Add Trade</Text>
-          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.emptyTitle, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Add Trade</Text>
+          <Text style={[styles.emptySubtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             Sign in to add trades
           </Text>
         </View>
@@ -213,17 +193,16 @@ export default function AddTradeScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.bgPrimary }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={[styles.title, { color: themeColors.text }]}>Add Trade</Text>
-          <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>
+          <Text style={[styles.title, { color: themeColors.textPrimary, fontFamily: themeColors.fontDisplay }]}>Add Trade</Text>
+          <Text style={[styles.subtitle, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>
             {selectedAccount?.name || 'No account selected'}
           </Text>
         </View>
@@ -235,26 +214,26 @@ export default function AddTradeScreen({ navigation }) {
             value={symbol}
             onChangeText={setSymbol}
             placeholder="SPY, AAPL, etc."
-            isDark={isDark}
+            themeColors={themeColors}
           />
 
           {/* Position Type */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Position Type</Text>
+            <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Position Type</Text>
             <View style={styles.optionRow}>
               <OptionButton
                 label="CALL"
                 isSelected={positionType === 1}
                 onPress={() => setPositionType(1)}
                 variant="success"
-                isDark={isDark}
+                themeColors={themeColors}
               />
               <OptionButton
                 label="PUT"
                 isSelected={positionType === 2}
                 onPress={() => setPositionType(2)}
                 variant="danger"
-                isDark={isDark}
+                themeColors={themeColors}
               />
             </View>
           </View>
@@ -265,7 +244,7 @@ export default function AddTradeScreen({ navigation }) {
             onChangeText={setEntryPrice}
             placeholder="0.00"
             keyboardType="decimal-pad"
-            isDark={isDark}
+            themeColors={themeColors}
           />
 
           <FormInput
@@ -274,7 +253,7 @@ export default function AddTradeScreen({ navigation }) {
             onChangeText={setExitPrice}
             placeholder="0.00"
             keyboardType="decimal-pad"
-            isDark={isDark}
+            themeColors={themeColors}
           />
 
           <FormInput
@@ -283,17 +262,17 @@ export default function AddTradeScreen({ navigation }) {
             onChangeText={setQuantity}
             placeholder="1"
             keyboardType="number-pad"
-            isDark={isDark}
+            themeColors={themeColors}
           />
 
           {/* Entry Date */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Entry Date</Text>
+            <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Entry Date</Text>
             <TouchableOpacity
-              style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              style={[styles.dateButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
               onPress={() => setShowEntryDatePicker(true)}
             >
-              <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+              <Text style={[styles.dateButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
                 {formatDate(entryDate)}
               </Text>
             </TouchableOpacity>
@@ -311,12 +290,12 @@ export default function AddTradeScreen({ navigation }) {
 
           {/* Exit Date */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Exit Date</Text>
+            <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Exit Date</Text>
             <TouchableOpacity
-              style={[styles.dateButton, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              style={[styles.dateButton, { backgroundColor: themeColors.bgSurface, borderColor: themeColors.border }]}
               onPress={() => setShowExitDatePicker(true)}
             >
-              <Text style={[styles.dateButtonText, { color: themeColors.text }]}>
+              <Text style={[styles.dateButtonText, { color: themeColors.textPrimary, fontFamily: themeColors.fontMono }]}>
                 {formatDate(exitDate)}
               </Text>
             </TouchableOpacity>
@@ -334,21 +313,21 @@ export default function AddTradeScreen({ navigation }) {
 
           {/* Result */}
           <View style={styles.inputContainer}>
-            <Text style={[styles.label, { color: themeColors.textSecondary }]}>Result (Optional)</Text>
+            <Text style={[styles.label, { color: themeColors.textSecondary, fontFamily: themeColors.fontMono }]}>Result (Optional)</Text>
             <View style={styles.optionRow}>
               <OptionButton
                 label="WIN"
                 isSelected={result === 1}
                 onPress={() => setResult(result === 1 ? null : 1)}
                 variant="success"
-                isDark={isDark}
+                themeColors={themeColors}
               />
               <OptionButton
                 label="LOSS"
                 isSelected={result === 0}
                 onPress={() => setResult(result === 0 ? null : 0)}
                 variant="danger"
-                isDark={isDark}
+                themeColors={themeColors}
               />
             </View>
           </View>
@@ -358,14 +337,14 @@ export default function AddTradeScreen({ navigation }) {
             value={notes}
             onChangeText={setNotes}
             placeholder="Trade notes..."
-            isDark={isDark}
+            themeColors={themeColors}
           />
 
           {/* Submit Button */}
           <TouchableOpacity
             style={[
               styles.submitButton,
-              { backgroundColor: themeColors.primary },
+              { backgroundColor: themeColors.accentGold },
               isSubmitting && styles.submitButtonDisabled
             ]}
             onPress={handleSubmit}
@@ -375,7 +354,7 @@ export default function AddTradeScreen({ navigation }) {
             {isSubmitting ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.submitButtonText}>Add Trade</Text>
+              <Text style={[styles.submitButtonText, { fontFamily: themeColors.fontMono }]}>Add Trade</Text>
             )}
           </TouchableOpacity>
         </View>
