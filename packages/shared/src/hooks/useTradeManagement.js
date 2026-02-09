@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useEffect, useMemo } from 'react';
 import { tradeReducer, TRADE_ACTIONS, initialTradeState } from '../reducers/tradeReducer';
 import { calculateProfit, normalizeDate } from '../utils/calculations';
-import { supabase } from '../supabaseClient';
+import { useSupabase } from '../supabase/SupabaseContext';
 
 const mapTradeWithTags = (trade) => {
   const tags = trade?.trade_tags?.map((association) => association.tag).filter(Boolean) || [];
@@ -13,7 +13,12 @@ const mapTradeWithTags = (trade) => {
   };
 };
 
+/**
+ * Trade management hook that uses Supabase via context injection.
+ * Works with both web and mobile apps.
+ */
 export const useTradeManagement = (selectedAccountId) => {
+  const supabase = useSupabase();
   const [state, dispatch] = useReducer(tradeReducer, initialTradeState);
 
   // Filter trades by selected account
@@ -49,7 +54,7 @@ export const useTradeManagement = (selectedAccountId) => {
     } catch (err) {
       // Error handling
     }
-  }, [selectedAccountId]);
+  }, [selectedAccountId, supabase]);
 
   useEffect(() => {
     if (selectedAccountId) {
@@ -156,7 +161,7 @@ export const useTradeManagement = (selectedAccountId) => {
     } catch (err) {
       return null;
     }
-  }, [selectedAccountId, fetchTrades]);
+  }, [selectedAccountId, fetchTrades, supabase]);
 
   const updateTrade = useCallback(async (tradeData) => {
     if (!selectedAccountId) {
@@ -271,7 +276,7 @@ export const useTradeManagement = (selectedAccountId) => {
     } catch (err) {
       return null;
     }
-  }, [selectedAccountId, fetchTrades]);
+  }, [selectedAccountId, fetchTrades, supabase]);
 
   const deleteTrade = useCallback(async (tradeId) => {
     if (!selectedAccountId) {
@@ -299,7 +304,7 @@ export const useTradeManagement = (selectedAccountId) => {
     } catch (err) {
       // Error handling
     }
-  }, [selectedAccountId, fetchTrades]);
+  }, [selectedAccountId, fetchTrades, supabase]);
 
   const setEditingTrade = useCallback((trade) => {
     dispatch({ type: TRADE_ACTIONS.SET_EDITING_TRADE, payload: trade });

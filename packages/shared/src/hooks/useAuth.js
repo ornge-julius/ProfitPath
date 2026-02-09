@@ -1,7 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../supabaseClient';
+import { useSupabase } from '../supabase/SupabaseContext';
 
+/**
+ * Authentication hook that uses Supabase via context injection.
+ * Works with both web and mobile apps.
+ */
 export const useAuth = () => {
+  const supabase = useSupabase();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,7 +47,7 @@ export const useAuth = () => {
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   // Sign in with email and password
   const signInWithEmail = useCallback(async (email, password) => {
@@ -67,7 +72,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   // Sign out
   const signOut = useCallback(async () => {
@@ -86,7 +91,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   // Sign up with email and password
   const signUpWithEmail = useCallback(async (email, password) => {
@@ -107,7 +112,7 @@ export const useAuth = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   return {
     user,
@@ -118,4 +123,3 @@ export const useAuth = () => {
     signUpWithEmail
   };
 };
-

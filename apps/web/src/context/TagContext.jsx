@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../supabaseClient';
-import { useAuth } from '../hooks/useAuth';
+import { useSupabase, useAuth } from '@profitpath/shared';
 import { useDemoMode } from './DemoModeContext';
 
 const TagContext = createContext(null);
@@ -14,6 +13,7 @@ export const useTagContext = () => {
 };
 
 export const TagProvider = ({ children }) => {
+  const supabase = useSupabase();
   const { user } = useAuth();
   const { isDemoMode, demoAuthUserId } = useDemoMode();
   const [tags, setTags] = useState([]);
@@ -92,7 +92,7 @@ export const TagProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, isDemoMode, demoAuthUserId]);
+  }, [user?.id, isDemoMode, demoAuthUserId, supabase]);
 
   // Fetch tags when component mounts or user ID changes
   useEffect(() => {
@@ -121,7 +121,7 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user?.id, fetchTags]);
+  }, [user?.id, fetchTags, supabase]);
 
   const updateTag = useCallback(async (tagId, tagData) => {
     if (!user?.id) return null;
@@ -146,7 +146,7 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user?.id, fetchTags]);
+  }, [user?.id, fetchTags, supabase]);
 
   const deleteTag = useCallback(async (tagId) => {
     if (!user?.id) return;
@@ -165,7 +165,7 @@ export const TagProvider = ({ children }) => {
     } catch (err) {
       throw err;
     }
-  }, [user?.id, fetchTags]);
+  }, [user?.id, fetchTags, supabase]);
 
   const value = {
     tags,
