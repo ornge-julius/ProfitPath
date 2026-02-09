@@ -226,6 +226,39 @@ You can run the application using Docker Compose, which simplifies the setup pro
     docker compose down
     ```
 
+### Mobile app (local testing with npx)
+
+The mobile app is an **Expo** (React Native) app in `apps/mobile`. You can run it locally without installing Expo CLI globally by using `npx`.
+
+1. **Prerequisites**
+   - Node.js (v18 or higher recommended)
+   - For device testing: **Expo Go** installed on your phone ([iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent))
+   - Optional: Xcode (iOS Simulator) or Android Studio (Android Emulator) for simulators
+
+2. **Install dependencies** (from the project root; workspaces will install web, mobile, and shared packages):
+   ```bash
+   npm install
+   ```
+
+3. **Run the mobile app with npx**
+   - **From the project root:**
+     ```bash
+     npx expo start --directory apps/mobile
+     ```
+   - **Or from the mobile app directory:**
+     ```bash
+     cd apps/mobile
+     npx expo start
+     ```
+
+4. **Open the app**
+   - **Physical device:** Scan the QR code with the Expo Go app (Camera on iOS, Expo Go on Android).
+   - **iOS Simulator:** Press `i` in the terminal after the dev server starts (macOS with Xcode only).
+   - **Android Emulator:** Press `a` in the terminal after the dev server starts.
+
+5. **Environment variables**  
+   Copy `apps/mobile/.env.example` to `apps/mobile/.env` and add your Supabase URL and anon key so the app can reach your backend.
+
 ### Supabase Configuration
 
 1. Create a project at [Supabase](https://supabase.com/) and note the Project URL and anon key.
