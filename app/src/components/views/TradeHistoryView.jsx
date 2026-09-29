@@ -4,7 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useFilteredTrades } from '../../hooks/useFilteredTrades';
 import { useAuth } from '../../hooks/useAuth';
 import { useTagFilter } from '../../context/TagFilterContext';
+import { calculateMetrics } from '../../utils/calculations';
 import TradeHistoryTable from '../tables/TradeHistoryTable';
+
+const formatCurrency = (value) => {
+  const abs = Math.abs(value);
+  return `${value < 0 ? '-' : value > 0 ? '+' : ''}$${abs.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+};
 
 const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
   const location = useLocation();
@@ -12,6 +18,7 @@ const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
   const { isAuthenticated } = useAuth();
   const { setSelectedTags, setMode, FILTER_MODES } = useTagFilter();
   const filteredTrades = useFilteredTrades(trades);
+  const summary = useMemo(() => calculateMetrics(filteredTrades, 0), [filteredTrades]);
 
   const selectedTagIdsFromState = useMemo(() => {
     if (!location.state || typeof location.state !== 'object') {
@@ -75,9 +82,31 @@ const TradeHistoryView = ({ trades, onToggleTradeForm }) => {
         )}
       </div>
 
+      {/* Quick Stats */}
+      {filteredTrades.length > 0 && (
+        <div className="card-luxe px-5 sm:px-6 py-4 flex-shrink-0">
+          <div className="flex flex-wrap divide-x divide-border-subtle -mx-2">
+            <div className="px-4 sm:px-6 first:pl-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted block mb-0.5">Trades</span>
+              <span className="font-mono text-sm text-text-primary">{summary.totalTrades}</span>
+            </div>
+            <div className="px-4 sm:px-6">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted block mb-0.5">Win Rate</span>
+              <span className="font-mono text-sm text-text-primary">{summary.winRate.toFixed(1)}%</span>
+            </div>
+            <div className="px-4 sm:px-6 last:pr-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted block mb-0.5">Net P&L</span>
+              <span className={`font-mono text-sm ${summary.totalProfit >= 0 ? 'text-gold' : 'text-loss'}`}>
+                {formatCurrency(summary.totalProfit)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="flex-1 min-h-0">
-        <TradeHistoryTable trades={filteredTrades} />
+        <TradeHistoryTable trades={filteredTrades} title="All Trades" />
       </div>
     </div>
   );

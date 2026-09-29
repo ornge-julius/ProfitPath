@@ -494,6 +494,222 @@ export const generateWinLossChartData = (batch) => {
   ];
 };
 
+// Generate a map of every day that has at least one closed trade to its net P&L
+// Used to paint the calendar view; keyed by normalized YYYY-MM-DD exit date
+export const generateDailyPNLMap = (trades) => {
+  const map = {};
+
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return map;
+  }
+
+  trades.forEach((trade) => {
+    if (!trade || !trade.exit_date) {
+      return;
+    }
+
+    const dateKey = normalizeDate(trade.exit_date);
+    if (!dateKey) {
+      return;
+    }
+
+    if (!map[dateKey]) {
+      map[dateKey] = { date: dateKey, netPNL: 0, tradeCount: 0, wins: 0, losses: 0 };
+    }
+
+    map[dateKey].netPNL += trade.profit || 0;
+    map[dateKey].tradeCount += 1;
+    if (trade.profit > 0) {
+      map[dateKey].wins += 1;
+    } else if (trade.profit < 0) {
+      map[dateKey].losses += 1;
+    }
+  });
+
+  return map;
+};
+
+// Aggregate trade performance by tag (win rate, net P&L, trade count per tag)
+export const generateTagPerformanceData = (trades) => {
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return [];
+  }
+
+  const byTag = {};
+
+  trades.forEach((trade) => {
+    const tags = Array.isArray(trade?.tags) ? trade.tags : [];
+    tags.forEach((tag) => {
+      if (!tag || !tag.id) return;
+
+      if (!byTag[tag.id]) {
+        byTag[tag.id] = {
+          id: tag.id,
+          name: tag.name || 'Untitled',
+          color: tag.color || '#C9A962',
+          count: 0,
+          wins: 0,
+          netPNL: 0
+        };
+      }
+
+      byTag[tag.id].count += 1;
+      byTag[tag.id].netPNL += trade.profit || 0;
+      if (trade.profit > 0) {
+        byTag[tag.id].wins += 1;
+      }
+    });
+  });
+
+  return Object.values(byTag)
+    .map((entry) => ({
+      ...entry,
+      winRate: entry.count > 0 ? (entry.wins / entry.count) * 100 : 0
+    }))
+    .sort((a, b) => b.netPNL - a.netPNL);
+};
+
+// Aggregate trade performance by day of week (Sunday first, matching Date#getDay)
+export const generateDayOfWeekPerformanceData = (trades) => {
+  const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const buckets = DAY_LABELS.map((label, index) => ({
+    day: index,
+    label,
+    count: 0,
+    wins: 0,
+    netPNL: 0
+  }));
+
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return buckets.map((bucket) => ({ ...bucket, winRate: 0 }));
+  }
+
+  trades.forEach((trade) => {
+    if (!trade || !trade.exit_date) return;
+    const normalized = normalizeDate(trade.exit_date);
+    if (!normalized) return;
+    const date = parseISO(normalized);
+    if (!isValid(date)) return;
+
+    const bucket = buckets[date.getDay()];
+    bucket.count += 1;
+    bucket.netPNL += trade.profit || 0;
+    if (trade.profit > 0) {
+      bucket.wins += 1;
+    }
+  });
+
+  return buckets.map((bucket) => ({
+    ...bucket,
+    winRate: bucket.count > 0 ? (bucket.wins / bucket.count) * 100 : 0
+  }));
+};
+
+// Compare CALL vs PUT performance
+export const generatePositionTypePerformanceData = (trades) => {
+  const types = [
+    { type: 1, label: 'CALL', count: 0, wins: 0, netPNL: 0 },
+    { type: 2, label: 'PUT', count: 0, wins: 0, netPNL: 0 }
+  ];
+
+  if (Array.isArray(trades)) {
+    trades.forEach((trade) => {
+      const bucket = types.find((t) => t.type === trade.position_type);
+      if (!bucket) return;
+      bucket.count += 1;
+      bucket.netPNL += trade.profit || 0;
+      if (trade.profit > 0) {
+        bucket.wins += 1;
+      }
+    });
+  }
+
+  return types.map((bucket) => ({
+    ...bucket,
+    winRate: bucket.count > 0 ? (bucket.wins / bucket.count) * 100 : 0
+  }));
+};
+
+// Calculate current streak and longest win/loss streaks (ordered by exit date ascending)
+export const calculateStreaks = (trades) => {
+  const empty = { currentType: null, currentCount: 0, longestWinStreak: 0, longestLossStreak: 0 };
+
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return empty;
+  }
+
+  const decided = trades.filter((trade) => trade && trade.exit_date && trade.profit !== 0 && trade.profit !== undefined);
+  if (decided.length === 0) {
+    return empty;
+  }
+
+  const ordered = [...decided].sort((a, b) => {
+    const dateA = parseISO(normalizeDate(a.exit_date));
+    const dateB = parseISO(normalizeDate(b.exit_date));
+    return compareAsc(dateA, dateB);
+  });
+
+  let longestWinStreak = 0;
+  let longestLossStreak = 0;
+  let runType = null;
+  let runCount = 0;
+
+  ordered.forEach((trade) => {
+    const isWinTrade = trade.profit > 0;
+    const type = isWinTrade ? 'W' : 'L';
+
+    if (type === runType) {
+      runCount += 1;
+    } else {
+      runType = type;
+      runCount = 1;
+    }
+
+    if (type === 'W') {
+      longestWinStreak = Math.max(longestWinStreak, runCount);
+    } else {
+      longestLossStreak = Math.max(longestLossStreak, runCount);
+    }
+  });
+
+  return {
+    currentType: runType,
+    currentCount: runCount,
+    longestWinStreak,
+    longestLossStreak
+  };
+};
+
+// Profit factor, expectancy, and average hold time in one bundle for the Insights page
+export const calculateAdvancedMetrics = (trades) => {
+  if (!Array.isArray(trades) || trades.length === 0) {
+    return { profitFactor: 0, expectancy: 0, avgHoldDays: 0 };
+  }
+
+  const grossWin = trades.filter((t) => t.profit > 0).reduce((sum, t) => sum + t.profit, 0);
+  const grossLoss = Math.abs(trades.filter((t) => t.profit < 0).reduce((sum, t) => sum + t.profit, 0));
+  const profitFactor = grossLoss > 0 ? grossWin / grossLoss : (grossWin > 0 ? Infinity : 0);
+
+  const totalTrades = trades.length;
+  const winningTrades = trades.filter((t) => t.profit > 0).length;
+  const losingTrades = trades.filter((t) => t.profit < 0).length;
+  const winRate = totalTrades > 0 ? winningTrades / totalTrades : 0;
+  const lossRate = totalTrades > 0 ? losingTrades / totalTrades : 0;
+  const avgWin = winningTrades > 0 ? grossWin / winningTrades : 0;
+  const avgLoss = losingTrades > 0 ? grossLoss / losingTrades : 0;
+  const expectancy = (winRate * avgWin) - (lossRate * avgLoss);
+
+  const holdDurations = trades
+    .filter((t) => t.entry_date && t.exit_date)
+    .map((t) => calculateTradeDuration(t.entry_date, t.exit_date));
+  const avgHoldDays = holdDurations.length > 0
+    ? holdDurations.reduce((sum, d) => sum + d, 0) / holdDurations.length
+    : 0;
+
+  return { profitFactor, expectancy, avgHoldDays };
+};
+
 // Generate cumulative P&L line chart data for batch comparison
 export const generateBatchComparisonData = (currentBatch, previousBatch) => {
   if ((!currentBatch || currentBatch.length === 0) && (!previousBatch || previousBatch.length === 0)) {

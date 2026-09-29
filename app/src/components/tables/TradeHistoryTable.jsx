@@ -169,8 +169,56 @@ const TradeHistoryTable = ({ trades, title }) => {
         )}
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)]">
+      {/* Mobile card list */}
+      <div className="md:hidden divide-y divide-border-subtle max-h-[calc(100vh-300px)] overflow-y-auto">
+        {paginatedTrades.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="font-mono text-sm text-text-muted">No trades found</p>
+          </div>
+        ) : (
+          paginatedTrades.map((trade) => {
+            const isProfit = trade.profit >= 0;
+            return (
+              <Link
+                key={trade.id}
+                to={`/detail/${trade.id}`}
+                state={{ from: `${location.pathname}${location.search}` }}
+                className="flex items-center gap-3 px-4 py-3.5 hover:bg-bg-surface/50 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-sm font-medium text-gold">{trade.symbol}</span>
+                    <span className={`badge ${trade.position_type === 1 ? 'badge-win' : 'badge-loss'}`}>
+                      {getTradeTypeText(trade.position_type)}
+                    </span>
+                    {trade.result !== undefined && (
+                      <span className={`badge ${isWin(trade.result) ? 'badge-win' : 'badge-loss'}`}>
+                        {getResultText(trade.result)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className="font-mono text-xs text-text-muted">{formatDate(trade.exit_date)}</span>
+                    {trade.tags && trade.tags.length > 0 && (
+                      <div className="flex gap-1">
+                        {trade.tags.slice(0, 2).map((tag) => (
+                          <TagBadge key={tag.id} tag={tag} size="small" />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <span className={`font-mono text-sm font-medium flex-shrink-0 ${isProfit ? 'text-gold' : 'text-loss'}`}>
+                  {isProfit ? '+' : ''}${trade.profit.toLocaleString()}
+                </span>
+              </Link>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto overflow-y-auto max-h-[calc(100vh-300px)]">
         <table className="w-full">
           <thead className="bg-bg-surface sticky top-0 z-10">
             <tr>
