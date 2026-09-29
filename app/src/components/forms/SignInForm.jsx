@@ -53,7 +53,7 @@ const SignInForm = ({ isOpen, onClose, onSignIn }) => {
           </h2>
           <button
             onClick={handleClose}
-            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
+            className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
             disabled={isLoading}
           >
             <X className="h-4 w-4 text-text-muted" />

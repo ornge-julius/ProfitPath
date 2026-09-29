@@ -14,6 +14,10 @@
    Warm, sophisticated cream tones
    ========================================== */
 :root {
+  /* Safe areas for iOS home-screen / notch devices (0px on browsers without them) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
   /* Core Colors - Warm Cream Palette */
   --color-bg-primary: #FAF8F5;
   --color-bg-surface: #F5F2ED;
@@ -136,6 +140,9 @@ body {
   line-height: 1.6;
   letter-spacing: 0.01em;
   transition: background-color var(--transition-smooth), color var(--transition-smooth);
+  /* Kill the browser "rubber-band" bounce and gray tap flash so installed/home-screen use feels native, not web */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Noise texture overlay - subtle in both modes */
@@ -281,6 +288,13 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-primary);
   transition: all var(--transition-fast);
   width: 100%;
+}
+
+/* iOS Safari zooms the whole page on focus if a field's font-size is below 16px; keeps typing feeling native instead of triggering a zoom */
+@media (max-width: 640px) {
+  .input-luxe {
+    font-size: 1rem;
+  }
 }
 
 .input-luxe::placeholder {

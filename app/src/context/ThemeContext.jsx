@@ -27,6 +27,12 @@ export const ThemeProvider = ({ children }) => {
     }
     // Save to localStorage
     localStorage.setItem('theme', theme);
+
+    // Keep the iOS status bar / Android address bar in sync with the active theme
+    const themeColorMeta = document.getElementById('theme-color-meta');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', theme === 'dark' ? '#0A0A0B' : '#FAF8F5');
+    }
   }, [theme]);
 
   const toggleTheme = () => {

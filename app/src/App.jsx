@@ -355,7 +355,7 @@ function AppContent() {
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'var(--gradient-surface)' }} />
       
       {/* Main content */}
-      <div className="relative z-10">
+      <div className="relative z-10" style={{ paddingTop: 'var(--safe-top)' }}>
         <Routes>
           <Route
             path="/detail/:tradeId"

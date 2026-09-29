@@ -52,7 +52,7 @@ const Header = ({
   };
 
   return (
-    <header className={`fixed left-0 right-0 z-30 transition-[top] duration-200 ${isDemoMode ? 'top-14 sm:top-[38px]' : 'top-0'}`}>
+    <header className={`fixed left-0 right-0 z-30 transition-[top] duration-200 ${isDemoMode ? 'top-[calc(3.5rem+var(--safe-top))] sm:top-[calc(38px+var(--safe-top))]' : 'top-[var(--safe-top)]'}`}>
       {/* Glass background with subtle border */}
       <div className="absolute inset-0 bg-bg-primary/90 backdrop-blur-xl border-b border-border-subtle" />
       
@@ -120,7 +120,7 @@ const Header = ({
                   <span className="font-display text-xl text-text-primary">Menu</span>
                   <button
                     onClick={closeMenu}
-                    className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
+                    className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-bg-elevated transition-colors"
                   >
                     <X className="h-4 w-4 text-text-muted" />
                   </button>

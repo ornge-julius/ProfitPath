@@ -26,7 +26,7 @@ const TagCard = ({ tag, onEdit, onDelete, onViewTrades, canEdit = true }) => {
             {onEdit && (
               <button
                 onClick={onEdit}
-                className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
+                className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
                 title="Edit tag"
               >
                 <Edit2 className="h-3.5 w-3.5" />
@@ -35,7 +35,7 @@ const TagCard = ({ tag, onEdit, onDelete, onViewTrades, canEdit = true }) => {
             {onDelete && (
               <button
                 onClick={onDelete}
-                className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-loss transition-all"
+                className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-loss transition-all"
                 title="Delete tag"
               >
                 <Trash2 className="h-3.5 w-3.5" />
