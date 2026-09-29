@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { Analytics } from '@vercel/analytics/react';
 import { useTradeManagement } from './hooks/useTradeManagement';
 import { useAppState } from './hooks/useAppState';
 import { useAuth } from './hooks/useAuth';
+import { calculateMetrics } from './utils/calculations';
 import Header from './components/ui/Header';
 import TradeForm from './components/forms/TradeForm';
-import SettingsForm from './components/forms/SettingsForm';
 import AccountEditForm from './components/forms/AccountEditForm';
 import SignInForm from './components/forms/SignInForm';
 import DashboardView from './components/views/DashboardView';
-import TradeBatchComparisonView from './components/views/TradeBatchComparisonView';
+import CalendarView from './components/views/CalendarView';
+import InsightsView from './components/views/InsightsView';
+import AccountsView from './components/views/AccountsView';
+import SettingsView from './components/views/SettingsView';
 import TagsManagementView from './components/views/TagsManagementView';
 import TradeHistoryView from './components/views/TradeHistoryView';
 import TradeDetailPage from './components/views/TradeDetailPage';
@@ -37,10 +40,8 @@ function AppContent() {
 
   const {
     startingBalance,
-    showBalanceForm,
     showTradeForm,
     updateStartingBalance,
-    toggleBalanceForm,
     toggleTradeForm,
     accounts,
     selectedAccountId,
@@ -49,6 +50,8 @@ function AppContent() {
     deleteAccount,
     selectAccount
   } = useAppState();
+
+  const selectedAccount = accounts.find((account) => account.id === selectedAccountId);
 
   const {
     trades,
@@ -59,6 +62,13 @@ function AppContent() {
     setEditingTrade,
     clearEditingTrade
   } = useTradeManagement(selectedAccountId);
+
+  // Live balance for the active account, computed from its own loaded trades
+  // (other accounts fall back to their last-synced stored balance, since their trades aren't fetched)
+  const activeAccountBalance = useMemo(
+    () => calculateMetrics(trades, startingBalance).currentBalance,
+    [trades, startingBalance]
+  );
 
   // Check if account is still loading
   const isAccountLoading = accounts.length === 0 && selectedAccountId === null;
@@ -177,19 +187,11 @@ function AppContent() {
     }
   };
 
-  const handleToggleSettings = () => {
-    if (!showBalanceForm && !ensureAuthenticated()) {
-      return;
-    }
-    toggleBalanceForm();
-  };
-
   const handleUpdateBalance = (newBalance) => {
     if (!ensureAuthenticated()) {
       return;
     }
     updateStartingBalance(newBalance);
-    toggleBalanceForm();
   };
 
   const handleAddAccount = async (accountData) => {
@@ -260,13 +262,12 @@ function AppContent() {
   };
 
   const MainLayout = () => {
-    const showTagFilter = location.pathname === '/' || location.pathname === '/history';
+    const showTagFilter = ['/', '/history', '/insights'].includes(location.pathname);
 
     return (
       <>
         <DemoModeBanner onSignIn={handleSignIn} />
         <Header
-          onToggleSettings={handleToggleSettings}
           onToggleTradeForm={handleToggleTradeForm}
           showTradeForm={showTradeForm}
           accounts={accounts}
@@ -281,14 +282,6 @@ function AppContent() {
           onSignOut={handleSignOut}
           showTagFilter={showTagFilter}
         />
-
-      {/* Settings Form */}
-      <SettingsForm
-        isOpen={showBalanceForm}
-        onClose={handleToggleSettings}
-        onSubmit={handleUpdateBalance}
-        currentBalance={startingBalance}
-      />
 
       {/* Trade Form */}
       <TradeForm
@@ -395,21 +388,6 @@ function AppContent() {
               }
             />
             <Route
-              path="comparison"
-              element={
-                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
-                  <TradeBatchComparisonView
-                    trades={trades}
-                  />
-                </div>
-              }
-            />
-            <Route path="tags" element={
-              <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
-                <TagsManagementView />
-              </div>
-            } />
-            <Route
               path="history"
               element={
                 <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
@@ -420,6 +398,62 @@ function AppContent() {
                 </div>
               }
             />
+            <Route
+              path="calendar"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <CalendarView trades={trades} />
+                </div>
+              }
+            />
+            <Route
+              path="insights"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <InsightsView trades={trades} />
+                </div>
+              }
+            />
+            <Route path="tags" element={
+              <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                <TagsManagementView />
+              </div>
+            } />
+            <Route
+              path="accounts"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <AccountsView
+                    accounts={accounts}
+                    selectedAccountId={selectedAccountId}
+                    activeAccountBalance={activeAccountBalance}
+                    onSelectAccount={handleSelectAccount}
+                    onAddAccount={handleAddAccount}
+                    onEditAccount={handleEditAccount}
+                    onDeleteAccount={handleDeleteAccount}
+                    isAuthenticated={isAuthenticated}
+                    onSignIn={handleSignIn}
+                  />
+                </div>
+              }
+            />
+            <Route
+              path="settings"
+              element={
+                <div className="max-w-6xl mx-auto px-6 sm:px-8 pb-32">
+                  <SettingsView
+                    isAuthenticated={isAuthenticated}
+                    user={user}
+                    onSignIn={handleSignIn}
+                    onSignOut={handleSignOut}
+                    startingBalance={startingBalance}
+                    onUpdateStartingBalance={handleUpdateBalance}
+                    selectedAccountName={selectedAccount?.name}
+                  />
+                </div>
+              }
+            />
+            <Route path="comparison" element={<Navigate to="/insights" replace />} />
           </Route>
         </Routes>
       </div>

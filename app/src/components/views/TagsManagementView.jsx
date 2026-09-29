@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, Edit2, Trash2, ArrowRight } from 'lucide-react';
 import { useTagManagement } from '../../hooks/useTagManagement';
 import { useAuth } from '../../hooks/useAuth';
 import { useTagFilter } from '../../context/TagFilterContext';
 import TagForm from '../forms/TagForm';
-import TagCard from '../ui/TagCard';
 import ConfirmModal from '../ui/ConfirmModal';
-import AnimatedContent from '../ui/animation/AnimatedContent';
 
 const TagsManagementView = () => {
   const { isAuthenticated } = useAuth();
@@ -117,32 +115,71 @@ const TagsManagementView = () => {
       {tags.length === 0 ? (
         <div className="card-luxe p-12 text-center">
           <p className="font-mono text-sm text-text-muted mb-2">
-            {isAuthenticated 
-              ? "No tags yet. Create your first tag to get started!" 
+            {isAuthenticated
+              ? "No tags yet. Create your first tag to get started!"
               : "No tags available. Sign in to view your tags."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...tags].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0)).map((tag, index) => (
-            <AnimatedContent 
-              key={tag.id} 
-              ease="back.out"
-              scale={0.95}
-              duration={0.4}
-              delay={index * 0.05}
-              distance={0}
-              immediate={true}
-            >
-              <TagCard
-                tag={tag}
-                onEdit={isAuthenticated ? () => setEditingTag(tag) : undefined}
-                onDelete={isAuthenticated ? () => setDeletingTag(tag) : undefined}
-                onViewTrades={handleViewTrades}
-                canEdit={isAuthenticated}
-              />
-            </AnimatedContent>
-          ))}
+        <div className="card-luxe overflow-hidden">
+          <div className="px-6 py-4 border-b border-border">
+            <h3 className="font-display text-xl text-text-primary">All Tags</h3>
+            <p className="font-mono text-xs text-text-muted mt-0.5">
+              {tags.length} tag{tags.length !== 1 ? 's' : ''}, ranked by usage
+            </p>
+          </div>
+          <div className="divide-y divide-border-subtle">
+            {[...tags].sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0)).map((tag) => {
+              const tagColor = tag.color || '#C9A962';
+
+              return (
+                <div key={tag.id} className="group flex items-center gap-4 px-6 py-3.5 hover:bg-bg-surface/50 transition-colors">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: tagColor, boxShadow: `0 0 8px ${tagColor}40` }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleViewTrades(tag)}
+                    className="font-mono text-sm text-text-primary hover:text-gold transition-colors text-left min-w-0 truncate flex-1"
+                  >
+                    {tag.name}
+                  </button>
+                  <span className="font-mono text-xs text-text-muted flex-shrink-0 w-20 text-right">
+                    {tag.usage_count || 0} trade{tag.usage_count !== 1 ? 's' : ''}
+                  </span>
+
+                  <div className="flex items-center gap-1 flex-shrink-0 w-[88px] justify-end">
+                    {isAuthenticated && (
+                      <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => setEditingTag(tag)}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
+                          title="Edit tag"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setDeletingTag(tag)}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-loss transition-all"
+                          title="Delete tag"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleViewTrades(tag)}
+                      className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all flex-shrink-0"
+                      title="View trades"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

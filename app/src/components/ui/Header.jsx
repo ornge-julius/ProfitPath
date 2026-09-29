@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LogIn,
   LogOut,
@@ -7,6 +7,10 @@ import {
   X,
   Sun,
   Moon,
+  Tags,
+  Wallet,
+  Settings,
+  ChevronRight,
 } from 'lucide-react';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import AccountSelector from './AccountSelector';
@@ -14,6 +18,12 @@ import GlobalDateFilter from './GlobalDateFilter';
 import GlobalTagFilter from './GlobalTagFilter';
 import { useTheme } from '../../context/ThemeContext';
 import { useDemoMode } from '../../context/DemoModeContext';
+
+const NAV_LINKS = [
+  { to: '/tags', label: 'Tags', description: 'Manage strategy tags', icon: Tags },
+  { to: '/accounts', label: 'Accounts', description: 'Manage trading accounts', icon: Wallet },
+  { to: '/settings', label: 'Settings', description: 'Preferences & session', icon: Settings },
+];
 
 const Header = ({
   accounts,
@@ -31,6 +41,7 @@ const Header = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toggleTheme, isDark } = useTheme();
   const { isDemoMode } = useDemoMode();
+  const location = useLocation();
 
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
   const closeMenu = () => setIsMenuOpen(false);
@@ -127,6 +138,42 @@ const Header = ({
                 </div>
 
                 <div className="px-6 py-6 space-y-8 overflow-y-auto max-h-[calc(100vh-80px)]">
+                  {/* Navigate Section */}
+                  <div>
+                    <p className="label-luxe mb-4">Navigate</p>
+                    <div className="space-y-2">
+                      {NAV_LINKS.map(({ to, label, description, icon: Icon }) => {
+                        const isActive = location.pathname === to;
+                        return (
+                          <Link
+                            key={to}
+                            to={to}
+                            onClick={closeMenu}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
+                              isActive
+                                ? 'border-gold/50 bg-gold/5'
+                                : 'border-border hover:border-border-accent bg-bg-surface hover:bg-bg-elevated'
+                            }`}
+                          >
+                            <Icon className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-gold' : 'text-text-muted'}`} />
+                            <span className="flex-1 min-w-0">
+                              <span className={`block font-mono text-sm ${isActive ? 'text-gold' : 'text-text-primary'}`}>
+                                {label}
+                              </span>
+                              <span className="block font-mono text-[11px] text-text-muted truncate">
+                                {description}
+                              </span>
+                            </span>
+                            <ChevronRight className="h-3.5 w-3.5 text-text-muted flex-shrink-0" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="divider" />
+
                   {/* Accounts Section */}
                   <div>
                     <p className="label-luxe mb-4">Accounts</p>

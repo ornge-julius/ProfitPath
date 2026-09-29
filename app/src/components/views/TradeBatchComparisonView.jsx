@@ -42,30 +42,26 @@ const TradeBatchComparisonView = ({ trades }) => {
   if (!trades || trades.length === 0) {
     return (
       <div className="space-y-6 sm:space-y-8 w-full max-w-full overflow-x-hidden">
-        <div className="text-center">
-          <h1 className="font-display text-display-md text-text-primary mb-2">Trade Batch Comparison</h1>
-          <p className="font-mono text-sm text-text-muted px-2">No trades available for comparison</p>
-        </div>
         <div className="card-luxe p-6 sm:p-8 text-center">
-          <p className="font-mono text-sm text-text-secondary">Please add trades to view batch comparison</p>
+          <p className="font-mono text-sm text-text-secondary">Add trades to see a batch comparison</p>
         </div>
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6 sm:space-y-8 w-full max-w-full overflow-x-hidden">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="font-display text-display-md text-text-primary mb-2">Trade Batch Comparison</h1>
-        <p className="font-mono text-sm text-text-muted px-2">
-          {trades.length <= 10 
-            ? `Showing baseline view with ${currentBatch.length} trades (comparison available once you reach 11+ trades)`
-            : `Comparing your most recent ${currentBatch.length} trades vs previous ${previousBatch.length} trades`
+      {/* Section Header */}
+      <div>
+        <h2 className="font-display text-2xl text-text-primary mb-1">Batch Comparison</h2>
+        <p className="font-mono text-xs text-text-muted">
+          {trades.length <= 10
+            ? `Baseline view with ${currentBatch.length} trades — full comparison unlocks at 11+ trades`
+            : `Most recent ${currentBatch.length} trades vs previous ${previousBatch.length}`
           }
         </p>
       </div>
-      
+
       {/* Win Rate Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 w-full">
         {/* Previous Batch Win Rate */}

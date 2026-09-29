@@ -4,8 +4,8 @@ import Dock from './Dock';
 import {
   History,
   LayoutDashboard,
-  Tag,
-  TrendingUpDown,
+  CalendarDays,
+  BarChart3,
   Plus
 } from 'lucide-react';
 
@@ -18,7 +18,7 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 640);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -32,7 +32,8 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
     return location.pathname === path;
   };
 
-  // Navigation items configuration
+  // Primary navigation only — daily trading workflow lives in the dock,
+  // configuration-style pages (Tags, Accounts, Settings) live in the header menu
   const navItems = [
     {
       icon: <LayoutDashboard className={`w-5 h-5 ${isActive('/') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
@@ -42,11 +43,11 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
       className: isActive('/') ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <History className={`w-5 h-5 ${isActive('/history') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
-      label: 'History',
-      onClick: () => navigate('/history'),
-      isActive: isActive('/history'),
-      className: isActive('/history') ? '!bg-gold !border-gold' : ''
+      icon: <CalendarDays className={`w-5 h-5 ${isActive('/calendar') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: 'Calendar',
+      onClick: () => navigate('/calendar'),
+      isActive: isActive('/calendar'),
+      className: isActive('/calendar') ? '!bg-gold !border-gold' : ''
     },
     {
       icon: <Plus className={`w-5 h-5 ${showTradeForm ? 'text-bg-primary' : 'text-text-secondary'}`} />,
@@ -56,18 +57,18 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
       className: showTradeForm ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <Tag className={`w-5 h-5 ${isActive('/tags') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
-      label: 'Tags',
-      onClick: () => navigate('/tags'),
-      isActive: isActive('/tags'),
-      className: isActive('/tags') ? '!bg-gold !border-gold' : ''
+      icon: <History className={`w-5 h-5 ${isActive('/history') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: 'History',
+      onClick: () => navigate('/history'),
+      isActive: isActive('/history'),
+      className: isActive('/history') ? '!bg-gold !border-gold' : ''
     },
     {
-      icon: <TrendingUpDown className={`w-5 h-5 ${isActive('/comparison') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
-      label: 'Compare',
-      onClick: () => navigate('/comparison'),
-      isActive: isActive('/comparison'),
-      className: isActive('/comparison') ? '!bg-gold !border-gold' : ''
+      icon: <BarChart3 className={`w-5 h-5 ${isActive('/insights') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
+      label: 'Insights',
+      onClick: () => navigate('/insights'),
+      isActive: isActive('/insights'),
+      className: isActive('/insights') ? '!bg-gold !border-gold' : ''
     }
   ];
 
