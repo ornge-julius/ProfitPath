@@ -38,32 +38,37 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
       icon: <LayoutDashboard className={`w-5 h-5 ${isActive('/') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'Dashboard',
       onClick: () => navigate('/'),
+      isActive: isActive('/'),
       className: isActive('/') ? '!bg-gold !border-gold' : ''
     },
     {
       icon: <History className={`w-5 h-5 ${isActive('/history') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'History',
       onClick: () => navigate('/history'),
+      isActive: isActive('/history'),
       className: isActive('/history') ? '!bg-gold !border-gold' : ''
     },
     {
       icon: <Plus className={`w-5 h-5 ${showTradeForm ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: showTradeForm ? 'Close' : 'New Trade',
       onClick: onToggleTradeForm,
+      isActive: showTradeForm,
       className: showTradeForm ? '!bg-gold !border-gold' : ''
     },
     {
       icon: <Tag className={`w-5 h-5 ${isActive('/tags') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'Tags',
       onClick: () => navigate('/tags'),
+      isActive: isActive('/tags'),
       className: isActive('/tags') ? '!bg-gold !border-gold' : ''
     },
     {
       icon: <TrendingUpDown className={`w-5 h-5 ${isActive('/comparison') ? 'text-bg-primary' : 'text-text-secondary'}`} />,
       label: 'Compare',
       onClick: () => navigate('/comparison'),
+      isActive: isActive('/comparison'),
       className: isActive('/comparison') ? '!bg-gold !border-gold' : ''
-    }  
+    }
   ];
 
   // Responsive sizing for mobile devices; 44px is the minimum comfortable touch target

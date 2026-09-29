@@ -87,7 +87,7 @@ const Header = ({
             <button
               type="button"
               onClick={toggleMenu}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-border hover:border-gold/50 hover:bg-gold/5 transition-all duration-200 focus:outline-none focus-ring"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border hover:border-gold/50 hover:bg-gold/5 transition-all duration-200 focus:outline-none focus-ring"
               aria-label="Toggle navigation menu"
               aria-expanded={isMenuOpen}
             >

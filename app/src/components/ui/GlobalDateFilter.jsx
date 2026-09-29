@@ -259,7 +259,7 @@ const GlobalDateFilter = ({ variant = 'default' }) => {
         aria-expanded={isOpen}
         className={`flex items-center gap-2 rounded-lg transition-all border focus:outline-none focus-ring ${
           isNavbarVariant
-            ? 'bg-bg-surface/80 hover:bg-bg-elevated border-border px-3 py-2 backdrop-blur'
+            ? 'bg-bg-surface/80 hover:bg-bg-elevated border-border px-3 py-2 min-h-[44px] backdrop-blur'
             : 'bg-bg-card hover:bg-bg-elevated border-border px-4 py-2'
         }`}
       >

@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'motion/react';
 import { Children, cloneElement, useEffect, useMemo, useRef, useState } from 'react';
 
-function DockItem({ children, className = '', onClick, mouseX, spring, distance, magnification, baseItemSize }) {
+function DockItem({ children, className = '', onClick, label, isActive, mouseX, spring, distance, magnification, baseItemSize }) {
   const ref = useRef(null);
   const isHovered = useMotionValue(0);
 
@@ -16,6 +16,13 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
   const targetSize = useTransform(mouseDistance, [-distance, 0, distance], [baseItemSize, magnification, baseItemSize]);
   const size = useSpring(targetSize, spring);
 
+  const handleKeyDown = e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.();
+    }
+  };
+
   return (
     <motion.div
       ref={ref}
@@ -28,10 +35,12 @@ function DockItem({ children, className = '', onClick, mouseX, spring, distance,
       onFocus={() => isHovered.set(1)}
       onBlur={() => isHovered.set(0)}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={`relative inline-flex items-center justify-center rounded-xl bg-bg-surface border border-border hover:border-border-accent transition-colors ${className}`}
       tabIndex={0}
       role="button"
-      aria-haspopup="true"
+      aria-label={label}
+      aria-current={isActive ? 'page' : undefined}
     >
       {Children.map(children, child => cloneElement(child, { isHovered }))}
     </motion.div>
@@ -59,6 +68,7 @@ function DockLabel({ children, className = '', ...rest }) {
           transition={{ duration: 0.15, ease: 'easeOut' }}
           className={`${className} absolute -top-8 left-1/2 w-fit whitespace-pre rounded-md bg-bg-card border border-border px-2.5 py-1 font-mono text-xs text-text-primary shadow-luxe-md`}
           role="tooltip"
+          aria-hidden="true"
           style={{ x: '-50%' }}
         >
           {children}
@@ -113,6 +123,8 @@ export default function Dock({
             key={index}
             onClick={item.onClick}
             className={item.className}
+            label={item.label}
+            isActive={item.isActive}
             mouseX={mouseX}
             spring={spring}
             distance={distance}
