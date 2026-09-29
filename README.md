@@ -5,33 +5,39 @@ This project brings together my passions for coding and trading to give me a cle
 ## Features
 
 ### Core Trading Features
-- **Multi-Account Management**: Create, edit, delete, and switch between multiple trading accounts
+- **Multi-Account Management**: Create, edit, delete, and switch between multiple trading accounts, with a dedicated Accounts page for comparing balances across accounts
 - **Trade Management**: Add, edit, view, and delete detailed trade information with inline editing
 - **Tag System**: Organize trades with custom tags, including color customization and usage tracking
-- **Performance Analytics**: Real-time calculation of win rate, P&L, average win/loss, and account balance
+- **Performance Analytics**: Real-time calculation of win rate, P&L, average win/loss, profit factor, expectancy, streaks, and account balance
 
 ### Data Visualization
 - **Cumulative Net Profit Chart**: Track your overall profit trajectory over time
 - **Monthly Net P&L Chart**: Bar chart showing monthly profit and loss breakdown
 - **Last 30 Days Net P&L Chart**: Daily P&L visualization for recent performance
 - **Win/Loss Distribution Chart**: Visual breakdown of winning vs losing trades
+- **Day of Week Edge Chart**: Net P&L broken down by exit day, to spot weekday patterns
 - **Batch Comparison Charts**: Compare recent trades against previous performance
+- **Account Comparison Chart**: Starting vs current balance across every account
 - **Account Balance Trend**: Sparkline visualization of balance changes
 
 ### Views & Navigation
-- **Dashboard**: At-a-glance metrics cards and key performance charts
-- **Trade History**: Comprehensive trade table with sorting and filtering
+- **Dashboard**: At-a-glance metrics cards, a best/worst trade + streak highlights strip, key performance charts, and a recent-trades list
+- **Calendar**: Monthly grid of daily P&L with weekly totals — tap a day to jump to its trades in History
+- **Insights**: Deeper analytics — win rate, profit factor, expectancy, streaks, performance by tag, day-of-week edge, calls vs. puts, and batch comparison
+- **Trade History**: Comprehensive trade table (with a card-based list on mobile) with sorting, filtering, and a quick-stats strip
 - **Trade Detail Page**: Individual trade view with full details and inline editing
-- **Tags Management**: Create, edit, and organize your trading tags
-- **Trade Batch Comparison**: Analyze your most recent trades vs previous batch
+- **Tags Management**: Create, edit, and organize your trading tags in a dense, sortable list
+- **Accounts**: Manage every trading account and compare their balances side by side
+- **Settings**: Appearance, starting balance, and session preferences
 
 ### User Experience
-- **Bottom Navigation Dock**: macOS-style dock with magnification effect for quick navigation
+- **Bottom Navigation Dock**: macOS-style dock with magnification effect, holding the five daily-workflow destinations (Dashboard, Calendar, New Trade, History, Insights)
+- **Header Navigation Drawer**: houses less-frequent destinations (Tags, Accounts, Settings), account switching, theme toggle, and session controls
 - **Global Date Filter**: Filter all data by date range across views
 - **Global Tag Filter**: Filter trades by tags with AND/OR logic modes
 - **Dark/Light Theme**: Toggle between elegant dark and warm light themes
 - **Demo Mode**: Browse sample data without authentication
-- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices, with mobile-specific layouts (e.g. card lists instead of wide tables)
 - **Smooth Animations**: GSAP and Motion-powered transitions and effects
 
 ### Authentication & Security
@@ -60,21 +66,20 @@ This project brings together my passions for coding and trading to give me a cle
 app/src/
 ├── components/
 │   ├── charts/              # Data visualization components
-│   │   ├── AccountBalanceChart.jsx
+│   │   ├── AccountComparisonChart.jsx
 │   │   ├── BatchComparisonLineChart.jsx
 │   │   ├── CumulativeNetProfitChart.jsx
-│   │   ├── CumulativeProfitChart.jsx
+│   │   ├── DayOfWeekChart.jsx
 │   │   ├── Last30DaysNetPNLChart.jsx
 │   │   ├── MonthlyNetPNLChart.jsx
 │   │   └── WinLossChart.jsx
 │   ├── forms/               # Form components
 │   │   ├── AccountEditForm.jsx
-│   │   ├── SettingsForm.jsx
 │   │   ├── SignInForm.jsx
 │   │   ├── TagForm.jsx
 │   │   └── TradeForm.jsx
 │   ├── tables/              # Table components
-│   │   └── TradeHistoryTable.jsx
+│   │   └── TradeHistoryTable.jsx   # Desktop table + mobile card-list view
 │   ├── ui/                  # UI components
 │   │   ├── animation/       # Animation wrappers
 │   │   ├── cards/           # Metric card components
@@ -83,6 +88,7 @@ app/src/
 │   │   │   ├── NetProfitCard.jsx
 │   │   │   └── WinRateCard.jsx
 │   │   ├── AccountSelector.jsx
+│   │   ├── BatchMetricsCard.jsx
 │   │   ├── BottomNavDock.jsx
 │   │   ├── ConfirmModal.jsx
 │   │   ├── DashboardMetricsCards.jsx
@@ -91,14 +97,19 @@ app/src/
 │   │   ├── GlobalDateFilter.jsx
 │   │   ├── GlobalTagFilter.jsx
 │   │   ├── Header.jsx
+│   │   ├── RecentTradesList.jsx
 │   │   ├── TagBadge.jsx
-│   │   ├── TagCard.jsx
+│   │   ├── TagPerformanceList.jsx
 │   │   ├── TagSelector.jsx
 │   │   └── TradeDetailView.jsx
 │   └── views/               # Page-level view components
+│       ├── AccountsView.jsx
+│       ├── CalendarView.jsx
 │       ├── DashboardView.jsx
+│       ├── InsightsView.jsx
+│       ├── SettingsView.jsx
 │       ├── TagsManagementView.jsx
-│       ├── TradeBatchComparisonView.jsx
+│       ├── TradeBatchComparisonView.jsx  # Embedded as a section inside Insights
 │       ├── TradeDetailPage.jsx
 │       └── TradeHistoryView.jsx
 ├── context/                 # React Context providers
@@ -111,6 +122,7 @@ app/src/
 │   ├── useAppState.js
 │   ├── useAuth.js
 │   ├── useFilteredTrades.js
+│   ├── useModalA11y.js
 │   ├── useTagManagement.js
 │   └── useTradeManagement.js
 ├── reducers/                # State management reducers
@@ -163,8 +175,8 @@ ProfitPath uses a custom **Monochrome Luxe** design system featuring:
 
 ### Navigation
 - **React Router**: Nested routes with protected layouts
-- **Bottom Dock**: Magnification-enabled navigation dock
-- **Swipeable Drawer**: Mobile-friendly side menu
+- **Bottom Dock**: Magnification-enabled navigation dock holding the five daily-workflow destinations (Dashboard, Calendar, New Trade, History, Insights)
+- **Swipeable Drawer**: Mobile-friendly side menu with a "Navigate" section (Tags, Accounts, Settings), account switching, appearance, and session controls
 
 ### Data Flow
 - **useFilteredTrades**: Combines date and tag filters
@@ -315,11 +327,15 @@ You can run the application using Docker Compose, which simplifies the setup pro
 
 | Path | Component | Description |
 |------|-----------|-------------|
-| `/` | DashboardView | Main dashboard with metrics and charts |
-| `/history` | TradeHistoryView | Complete trade history table |
+| `/` | DashboardView | Main dashboard with metrics, highlights, and charts |
+| `/history` | TradeHistoryView | Complete trade history table (mobile: card list) |
 | `/detail/:tradeId` | TradeDetailPage | Individual trade details |
+| `/calendar` | CalendarView | Monthly daily-P&L calendar |
+| `/insights` | InsightsView | Deeper analytics, including embedded batch comparison |
 | `/tags` | TagsManagementView | Tag management interface |
-| `/comparison` | TradeBatchComparisonView | Batch performance comparison |
+| `/accounts` | AccountsView | Manage and compare trading accounts |
+| `/settings` | SettingsView | Appearance, starting balance, and session |
+| `/comparison` | — | Redirects to `/insights` (batch comparison now lives there) |
 
 ## Development Notes
 
