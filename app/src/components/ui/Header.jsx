@@ -16,6 +16,7 @@ import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import AccountSelector from './AccountSelector';
 import GlobalDateFilter from './GlobalDateFilter';
 import GlobalTagFilter from './GlobalTagFilter';
+import LogoMark from './LogoMark';
 import { useTheme } from '../../context/ThemeContext';
 import { useDemoMode } from '../../context/DemoModeContext';
 
@@ -70,7 +71,8 @@ const Header = ({
       <nav className="relative max-w-6xl mx-auto px-6 sm:px-8">
         <div className="flex h-20 items-center justify-between">
           {/* Logo / Brand */}
-          <Link to="/" className="flex items-center group">
+          <Link to="/" className="flex items-center gap-2 group">
+            <LogoMark className="w-7 h-7 shrink-0 text-text-primary group-hover:text-gold transition-colors duration-300" />
             <span className="font-display text-2xl tracking-tight text-text-primary group-hover:text-gold transition-colors duration-300">
               Profit<span className="text-gold">Path</span>
             </span>
