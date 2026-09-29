@@ -167,8 +167,8 @@ const Header = ({
                         isDark ? 'bg-gold' : 'bg-border'
                       }`}>
                         <span
-                          className={`absolute top-0.5 h-4 w-4 rounded-full bg-bg-primary shadow-sm transition-transform ${
-                            isDark ? 'translate-x-5' : 'translate-x-0.5'
+                          className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-bg-primary shadow-sm transition-transform ${
+                            isDark ? 'translate-x-5' : 'translate-x-0'
                           }`}
                         />
                       </div>
