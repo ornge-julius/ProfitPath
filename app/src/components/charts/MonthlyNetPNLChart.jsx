@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell, Rectangle } from 'recharts';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -22,7 +22,15 @@ const RoundedBar = (props) => {
 
 const MonthlyNetPNLChart = ({ data }) => {
   const { isDark } = useTheme();
-  
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Theme-aware colors
   const colors = {
     win: isDark ? '#C9A962' : '#6B8E23',
@@ -63,8 +71,8 @@ const MonthlyNetPNLChart = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="card-luxe p-6">
-        <div className="mb-6">
+      <div className="card-luxe px-2 py-4 sm:p-6">
+        <div className="mb-4 sm:mb-6 px-2 sm:px-0">
           <h3 className="font-display text-xl text-text-primary">Monthly P&L</h3>
           <p className="font-mono text-xs text-text-muted mt-1">Net profit/loss by month</p>
         </div>
@@ -76,14 +84,14 @@ const MonthlyNetPNLChart = ({ data }) => {
   }
 
   return (
-    <div className="card-luxe p-6">
-      <div className="mb-6">
+    <div className="card-luxe px-2 py-4 sm:p-6">
+      <div className="mb-4 sm:mb-6 px-2 sm:px-0">
         <h3 className="font-display text-xl text-text-primary">Monthly P&L</h3>
         <p className="font-mono text-xs text-text-muted mt-1">Net profit/loss by month</p>
       </div>
       <div className="w-full">
         <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+          <BarChart data={data} margin={{ top: 8, right: isMobile ? 0 : 8, left: 0, bottom: 8 }}>
             <CartesianGrid 
               strokeDasharray="3 3" 
               stroke={colors.grid} 
@@ -102,7 +110,7 @@ const MonthlyNetPNLChart = ({ data }) => {
               tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
               axisLine={{ stroke: colors.grid }}
               tickLine={{ stroke: colors.grid }}
-              width={60}
+              width={isMobile ? 38 : 60}
             />
             <ReferenceLine y={0} stroke={colors.reference} strokeDasharray="4 4" />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: colors.cursorFill }} />
