@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
-const ConfirmModal = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title, 
-  message, 
+const ConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   confirmButtonColor = 'bg-loss hover:bg-loss/80'
 }) => {
+  const modalRef = useRef(null);
+  useModalA11y(isOpen, onClose, modalRef);
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -22,21 +26,28 @@ const ConfirmModal = ({
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 modal-overlay z-40"
         onClick={handleBackdropClick}
       />
-      
+
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="modal-content max-w-md w-full">
+        <div
+          ref={modalRef}
+          className="modal-content max-w-md w-full"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-modal-title"
+          tabIndex={-1}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-5 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-loss-bg flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-loss" />
               </div>
-              <h3 className="font-display text-xl text-text-primary">{title}</h3>
+              <h3 id="confirm-modal-title" className="font-display text-xl text-text-primary">{title}</h3>
             </div>
             <button 
               onClick={onClose}

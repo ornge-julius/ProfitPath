@@ -1,10 +1,10 @@
-import React from 'react';
-import { 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import React, { useState, useEffect } from 'react';
+import {
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   ReferenceLine,
   AreaChart
@@ -14,7 +14,15 @@ import { useTheme } from '../../context/ThemeContext';
 
 const CumulativeNetProfitChart = ({ data }) => {
   const { isDark } = useTheme();
-  
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Theme-aware colors
   const colors = {
     line: isDark ? '#C9A962' : '#9E7C3C',
@@ -31,8 +39,8 @@ const CumulativeNetProfitChart = ({ data }) => {
 
   if (!data || data.length === 0) {
     return (
-      <div className="card-luxe p-6">
-        <div className="mb-6">
+      <div className="card-luxe px-2 py-4 sm:p-6">
+        <div className="mb-4 sm:mb-6 px-2 sm:px-0">
           <h3 className="font-display text-xl text-text-primary">Profit Curve</h3>
           <p className="font-mono text-xs text-text-muted mt-1">Cumulative net profit over time</p>
         </div>
@@ -101,15 +109,15 @@ const CumulativeNetProfitChart = ({ data }) => {
   };
 
   return (
-    <div className="card-luxe p-6">
-      <div className="mb-6">
+    <div className="card-luxe px-2 py-4 sm:p-6">
+      <div className="mb-4 sm:mb-6 px-2 sm:px-0">
         <h3 className="font-display text-xl text-text-primary">Profit Curve</h3>
         <p className="font-mono text-xs text-text-muted mt-1">Cumulative net profit over time</p>
       </div>
-      
+
       <div className="w-full">
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 40 }}>
+          <AreaChart data={chartData} margin={{ top: 8, right: isMobile ? 0 : 8, left: 0, bottom: 40 }}>
             <defs>
               <linearGradient id="cumulativeSplit" x1="0" y1="0" x2="0" y2="1">
                 <stop offset={gradientOffset} stopColor={colors.winFill} stopOpacity={0.2} />
@@ -144,7 +152,7 @@ const CumulativeNetProfitChart = ({ data }) => {
               allowDataOverflow={false}
               axisLine={{ stroke: colors.grid }}
               tickLine={{ stroke: colors.grid }}
-              width={70}
+              width={isMobile ? 44 : 70}
             />
           
             <ReferenceLine 

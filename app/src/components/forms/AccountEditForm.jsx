@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
-const AccountEditForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  account 
+const AccountEditForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  account
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     startingBalance: '',
     currentBalance: ''
   });
+  const modalRef = useRef(null);
+  useModalA11y(isOpen, onClose, modalRef);
 
   useEffect(() => {
     if (account) {
@@ -48,11 +51,18 @@ const AccountEditForm = ({
 
   return (
     <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
-      <div className="modal-content w-full max-w-md">
+      <div
+        ref={modalRef}
+        className="modal-content w-full max-w-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="account-edit-modal-title"
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
-            <h2 className="font-display text-xl text-text-primary">Edit Account</h2>
+            <h2 id="account-edit-modal-title" className="font-display text-xl text-text-primary">Edit Account</h2>
             <p className="font-mono text-xs text-text-muted mt-1">Update account details</p>
           </div>
           <button
