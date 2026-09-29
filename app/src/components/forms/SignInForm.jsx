@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 const SignInForm = ({ isOpen, onClose, onSignIn }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const SignInForm = ({ isOpen, onClose, onSignIn }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const modalRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,14 +43,23 @@ const SignInForm = ({ isOpen, onClose, onSignIn }) => {
     onClose();
   };
 
+  useModalA11y(isOpen, handleClose, modalRef);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
-      <div className="modal-content w-full max-w-md">
+      <div
+        ref={modalRef}
+        className="modal-content w-full max-w-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="signin-modal-title"
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
-          <h2 className="font-display text-2xl text-text-primary">
+          <h2 id="signin-modal-title" className="font-display text-2xl text-text-primary">
             Sign In
           </h2>
           <button

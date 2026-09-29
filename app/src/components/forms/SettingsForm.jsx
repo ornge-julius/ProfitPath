@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
-const SettingsForm = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  currentBalance 
+const SettingsForm = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  currentBalance
 }) => {
   const [balance, setBalance] = useState(currentBalance);
+  const modalRef = useRef(null);
+  useModalA11y(isOpen, onClose, modalRef);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -18,11 +21,18 @@ const SettingsForm = ({
 
   return (
     <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
-      <div className="modal-content w-full max-w-md">
+      <div
+        ref={modalRef}
+        className="modal-content w-full max-w-md"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
+        tabIndex={-1}
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-border">
           <div>
-            <h2 className="font-display text-xl text-text-primary">Account Settings</h2>
+            <h2 id="settings-modal-title" className="font-display text-xl text-text-primary">Account Settings</h2>
             <p className="font-mono text-xs text-text-muted mt-1">Update your account balance</p>
           </div>
           <button
