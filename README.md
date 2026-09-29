@@ -1,4 +1,5 @@
-<img width="800" height="800" alt="FullLogo_Transparent" src="https://github.com/user-attachments/assets/9c636134-6144-411d-a2d2-ee71d99d4757" /> 
+<img width="400" height="87" alt="ProfitPath" src="./app/src/assets/brand/logo-lockup-dark.png#gh-dark-mode-only" />
+<img width="400" height="87" alt="ProfitPath" src="./app/src/assets/brand/logo-lockup-light.png#gh-light-mode-only" />
 
 # ProfitPath
 This project brings together my passions for coding and trading to give me a clearer, data‑driven view of my performance and decision‑making.  It helps me analyze my trading habits and strategies so I can systematically track and refine my path to consistent profitability.
