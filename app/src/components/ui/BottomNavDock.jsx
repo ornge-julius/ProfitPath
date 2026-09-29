@@ -66,13 +66,16 @@ const BottomNavDock = ({ onToggleTradeForm, showTradeForm }) => {
     }  
   ];
 
-  // Responsive sizing for mobile devices
-  const baseItemSize = isMobile ? 42 : 48;
+  // Responsive sizing for mobile devices; 44px is the minimum comfortable touch target
+  const baseItemSize = isMobile ? 44 : 48;
   const magnification = isMobile ? 56 : 64;
   const panelHeight = isMobile ? 56 : 64;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
+      style={{ paddingBottom: 'var(--safe-bottom)' }}
+    >
       <div className="pointer-events-auto">
         <Dock
           items={navItems}

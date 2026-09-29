@@ -223,7 +223,7 @@ const TradeForm = ({
             </div>
             <button 
               onClick={handleCancel}
-              className="h-10 w-10 flex items-center justify-center rounded-lg border border-border hover:border-border-accent hover:bg-bg-elevated transition-all"
+              className="h-11 w-11 flex items-center justify-center rounded-lg border border-border hover:border-border-accent hover:bg-bg-elevated transition-all"
             >
               <X className="h-4 w-4 text-text-muted" />
             </button>

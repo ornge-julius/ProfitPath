@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-28T20:27:50Z",
+  "title": "Design System: ProfitPath",
+  "extensions": {
+    "colorMeta": {
+      "aged-brass": { "role": "primary", "displayName": "Aged Brass", "canonical": "#C9A962", "lightModeAlt": "#9E7C3C", "tonalRamp": ["#3D3120", "#5C4B30", "#7A6440", "#8B7444", "#A88B54", "#C9A962", "#D4B87A", "#E8DDBF"] },
+      "olive-ledger": { "role": "win", "displayName": "Olive Ledger", "canonical": "#C9A962", "note": "Dark mode reuses aged-brass for win; light mode uses true olive #6B8E23.", "tonalRamp": ["#2E3B0E", "#465A15", "#5E791C", "#6B8E23", "#85A83E", "#A0C25F", "#BFDB8C", "#E0EFC2"] },
+      "muted-wine": { "role": "loss", "displayName": "Muted Wine", "canonical": "#8B4049", "lightModeAlt": "#A04050", "tonalRamp": ["#2E1518", "#4A2226", "#6B3037", "#8B4049", "#A04050", "#B96570", "#D4959C", "#EAC6CA"] },
+      "ink-black": { "role": "neutral", "displayName": "Ink Black", "canonical": "#0A0A0B", "lightModeAlt": "#FAF8F5" },
+      "charcoal-surface": { "role": "neutral", "displayName": "Charcoal Surface", "canonical": "#141416", "lightModeAlt": "#F5F2ED" },
+      "charcoal-card": { "role": "neutral", "displayName": "Charcoal Card", "canonical": "#1A1A1D", "lightModeAlt": "#FFFFFF" },
+      "charcoal-elevated": { "role": "neutral", "displayName": "Charcoal Elevated", "canonical": "#222225", "lightModeAlt": "#EFEBE5" },
+      "hairline-border": { "role": "neutral", "displayName": "Hairline Border", "canonical": "#2A2A2E", "lightModeAlt": "#E5E0D8" },
+      "ivory-text": { "role": "neutral", "displayName": "Ivory Text", "canonical": "#F5F5F5", "lightModeAlt": "#1A1A1D" },
+      "smoke-text": { "role": "neutral", "displayName": "Smoke Text", "canonical": "#8B8B8E", "lightModeAlt": "#5A5A5D" },
+      "ash-text": { "role": "neutral", "displayName": "Ash Text", "canonical": "#5A5A5D", "lightModeAlt": "#8B8B8E" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Headings h1-h6, always Cormorant Garamond." },
+      "stat": { "displayName": "Stat", "purpose": "Large metric-card numbers (net profit, balance, win rate)." },
+      "body": { "displayName": "Body", "purpose": "Default page copy; IBM Plex Mono, not a sans-serif." },
+      "data": { "displayName": "Data", "purpose": "Tabular values in trade tables and cards; tabular numerals enabled." },
+      "label": { "displayName": "Label", "purpose": "Uppercase mono labels: stat labels, table headers, badges, form labels." }
+    },
+    "shadows": [
+      { "name": "luxe-sm", "value": "0 1px 3px rgba(0,0,0,0.08) (light) / 0 1px 2px rgba(0,0,0,0.4) (dark)", "purpose": "Resting shadow on primary buttons only." },
+      { "name": "luxe-md", "value": "0 4px 12px rgba(0,0,0,0.1) (light) / 0 4px 12px rgba(0,0,0,0.5) (dark)", "purpose": "Hover state for cards and buttons." },
+      { "name": "luxe-lg", "value": "0 8px 24px rgba(0,0,0,0.12) (light) / 0 8px 24px rgba(0,0,0,0.6) (dark)", "purpose": "Modals and the floating bottom dock." },
+      { "name": "glow", "value": "0 0 40px rgba(158,124,60,0.15) (light) / 0 0 40px rgba(201,169,98,0.1) (dark)", "purpose": "Ambient gold glow paired with luxe-md on primary-button hover only." }
+    ],
+    "motion": [
+      { "name": "transition-fast", "value": "150ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Button/input hover and focus transitions." },
+      { "name": "transition-smooth", "value": "300ms cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Card hover, theme switch, background/color transitions." },
+      { "name": "transition-elegant", "value": "500ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Page-enter transitions." },
+      { "name": "dock-spring", "value": "spring(mass: 0.1, stiffness: 150, damping: 12)", "purpose": "Bottom dock item magnification physics." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action button; gold gradient, uppercase mono label.",
+      "html": "<button class=\"ds-btn-primary\">Save Trade</button>",
+      "css": ".ds-btn-primary { background: linear-gradient(135deg, #C9A962 0%, #D4B87A 50%, #C9A962 100%); color: #0A0A0B; font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-weight: 500; font-size: 0.875rem; letter-spacing: 0.05em; text-transform: uppercase; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.4); transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { filter: brightness(1.1); box-shadow: 0 4px 12px rgba(0,0,0,0.5), 0 0 40px rgba(201,169,98,0.1); transform: translateY(-1px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #0A0A0B, 0 0 0 4px #C9A962; } .ds-btn-primary:active { transform: translateY(0); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ghost/outline button for cancel and low-emphasis actions.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: #F5F5F5; font-family: 'IBM Plex Mono', 'SF Mono', monospace; font-weight: 500; font-size: 0.875rem; letter-spacing: 0.03em; padding: 12px 24px; border: 1px solid #2A2A2E; border-radius: 8px; cursor: pointer; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-secondary:hover { border-color: #C9A962; color: #C9A962; background: rgba(201,169,98,0.12); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px #0A0A0B, 0 0 0 4px #C9A962; }"
+    },
+    {
+      "name": "Metric Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card Luxe: elevated card with a gold hairline that fades in along the top edge on hover.",
+      "html": "<div class=\"ds-card\"><span class=\"ds-card-label\">Net Profit</span><p class=\"ds-card-stat\">$12,480</p></div>",
+      "css": ".ds-card { background: #1A1A1D; border: 1px solid #2A2A2E; border-radius: 12px; padding: 20px; position: relative; overflow: hidden; transition: all 300ms cubic-bezier(0.4,0,0.2,1); } .ds-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, #C9A962, transparent); opacity: 0; transition: opacity 300ms cubic-bezier(0.4,0,0.2,1); } .ds-card:hover { border-color: #3A3A3E; box-shadow: 0 4px 12px rgba(0,0,0,0.5); } .ds-card:hover::before { opacity: 0.4; } .ds-card-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #5A5A5D; } .ds-card-stat { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2.5rem; font-weight: 400; letter-spacing: -0.03em; line-height: 1; color: #F5F5F5; margin: 4px 0 0; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text field with gold focus ring.",
+      "html": "<input class=\"ds-input\" placeholder=\"Symbol (e.g. AAPL)\" />",
+      "css": ".ds-input { background: #141416; border: 1px solid #2A2A2E; border-radius: 8px; padding: 14px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 0.875rem; color: #F5F5F5; width: 100%; transition: all 150ms cubic-bezier(0.4,0,0.2,1); } .ds-input::placeholder { color: #5A5A5D; } .ds-input:focus { outline: none; border-color: #C9A962; box-shadow: 0 0 0 3px rgba(201,169,98,0.1); }"
+    },
+    {
+      "name": "Tag Chip",
+      "kind": "chip",
+      "refersTo": "badge-win",
+      "description": "Color-coded tag chip; dot leads the label, background is a 15%-opacity tint of the tag color.",
+      "html": "<span class=\"ds-chip\"><span class=\"ds-chip-dot\"></span>Breakout</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; font-weight: 500; border-radius: 4px; border: 1px solid rgba(201,169,98,0.3); background: rgba(201,169,98,0.15); color: #C9A962; } .ds-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #C9A962; flex-shrink: 0; }"
+    },
+    {
+      "name": "Win/Loss Badge",
+      "kind": "chip",
+      "refersTo": "badge-win",
+      "description": "Locked semantic badge for trade outcome, olive-ledger for wins, muted-wine for losses.",
+      "html": "<span class=\"ds-badge-win\">Win</span>",
+      "css": ".ds-badge-win { display: inline-flex; align-items: center; padding: 4px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 4px; border: 1px solid rgba(201,169,98,0.3); background: rgba(201,169,98,0.12); color: #C9A962; }"
+    },
+    {
+      "name": "Bottom Nav Dock",
+      "kind": "nav",
+      "refersTo": "card",
+      "description": "Signature floating macOS-style dock; primary navigation, magnifies items near the cursor/touch, active item fills solid gold.",
+      "html": "<nav class=\"ds-dock\"><button class=\"ds-dock-item ds-dock-item--active\">◧</button><button class=\"ds-dock-item\">☰</button><button class=\"ds-dock-item\">+</button></nav>",
+      "css": ".ds-dock { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(26,26,29,0.95); backdrop-filter: blur(24px); border: 1px solid #2A2A2E; border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); } .ds-dock-item { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid transparent; background: transparent; color: #8B8B8E; transition: transform 150ms cubic-bezier(0.4,0,0.2,1), background 150ms; } .ds-dock-item--active { background: #C9A962; border-color: #C9A962; color: #0A0A0B; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Monochrome Luxe",
+    "overview": "ProfitPath reads like a private trading ledger, not a consumer fintech app: a near-black (or warm-cream, in light mode) canvas, disciplined mono/serif type, and exactly one accent color spent sparingly. Cormorant Garamond gives large numbers and headings an editorial, almost old-money weight; IBM Plex Mono keeps every trade, label, and data point feeling precise and tabular, like ledger entries. Aged Brass gold is the only color that speaks at full volume, everything else (win green, loss wine) sits in muted, desaturated tones so wins and losses register as facts, not alarms.\n\nThe system is restrained and precise by design: buttons, cards, and inputs are flat and quiet at rest, and gold or shadow only appears as a deliberate response to hover or focus. Nothing animates or glows without a reason. A subtle noise-texture overlay and soft glass blur keep the flatness from feeling sterile.",
+    "keyCharacteristics": [
+      "Near-monochrome base (charcoal/ink in dark, warm cream in light) with a single gold accent used deliberately, not decoratively.",
+      "Cormorant Garamond for display/stat numbers, IBM Plex Mono for everything else, including body copy.",
+      "Flat at rest; depth and gold only appear on hover, focus, or as a status signal.",
+      "Win/loss colors are muted and desaturated, never neon-bright."
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Aged Brass gold is the only saturated color allowed outside win/loss semantics. If a new UI element wants a color, the answer is gold, a neutral, or a win/loss tone. Never introduce a fourth hue.", "section": "colors" },
+      { "name": "The Gold-Is-Profit Rule", "body": "In dark mode, \"win\" reuses the gold accent rather than green, gold reads simultaneously as brand and as profit. Light mode is the only place true olive green appears.", "section": "colors" },
+      { "name": "The Ledger-Alignment Rule", "body": "Any numeric value that could appear in a list or table uses tabular numerals so digits align vertically, columns of numbers must line up like a real ledger.", "section": "typography" },
+      { "name": "The Flat-At-Rest Rule", "body": "Nothing has a shadow until it's hovered, focused, or is a genuinely floating surface (modal, dock). A resting shadow on a static element is a bug, not a style choice.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do treat gold as the only saturated accent; every other color is neutral or semantic (win/loss).",
+      "Do keep numeric/tabular values in IBM Plex Mono with tabular numerals so they align in columns.",
+      "Do keep shadows absent at rest and introduce them only on hover, focus, or for genuinely floating surfaces (modals, the dock).",
+      "Do use the floating bottom dock as primary navigation; keep it thumb-reachable and don't bury it behind a hamburger menu on mobile.",
+      "Do keep borders single-weight hairlines (1px) at every elevation level."
+    ],
+    "donts": [
+      "Don't introduce a second saturated brand color alongside gold.",
+      "Don't use a bright/saturated red or green for win/loss states; they must stay muted (wine / olive or gold-in-dark).",
+      "Don't add a resting shadow to a static card, button, or input, shadows are earned by interaction or floating position.",
+      "Don't replace the bottom dock with a conventional top tab bar or sidebar; it's a deliberate, named signature component.",
+      "Don't set body copy in a sans-serif; body and data text stay in IBM Plex Mono, only headings and stat numbers use Cormorant Garamond."
+    ]
+  }
+}

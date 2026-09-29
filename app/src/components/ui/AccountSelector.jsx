@@ -82,7 +82,7 @@ const AccountSelector = ({
               {isAuthenticated && (
                 <button
                   onClick={() => onEditAccount(selectedAccount)}
-                  className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
+                  className="h-11 w-11 flex items-center justify-center rounded-lg hover:bg-bg-elevated text-text-muted hover:text-gold transition-all"
                 >
                   <Settings className="h-4 w-4" />
                 </button>

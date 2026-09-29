@@ -8,8 +8,9 @@ const DemoModeBanner = ({ onSignIn }) => {
   if (!isDemoMode) return null;
 
   return (
-    <div 
+    <div
       className="fixed top-0 left-0 right-0 z-50 bg-bg-surface border-b border-border"
+      style={{ paddingTop: 'var(--safe-top)' }}
       role="banner"
       aria-label="Demo mode indicator"
     >
